@@ -48,15 +48,15 @@ Follow these steps to get a local copy of Orpheus up and running:
 
 1. Open up cmd/terminal and cd into a place where you want to save Orpheus<br>
 2. A. `git clone https://github.com/bascurtiz/OrpheusDL && cd OrpheusDL && pip install --upgrade --ignore-installed -r requirements.txt`<br>
-      (use pip3 on macOS)<br>
+      [i](use pip3 on macOS)[/i]<br>
    B. `pip install --no-deps --target vendor/librespot git+https://github.com/kokarare1212/librespot-python`<br>
-      (use pip3 on macOS)<br>
+      [i](use pip3 on macOS)[/i]<br>
  
 3. A. `python orpheus.py settings refresh`<br>
-       (use python3 on macOS)<br>
+       [i](use python3 on macOS)[/i]<br>
    B. Make sure Python certificates are up to date:<br>
        `pip install --upgrade certifi`<br>
-       (python3 on macOS)<br>
+       [i](python3 on macOS)[/i]<br>
 
 4. Install modules:<br>   
    Apple Music:
@@ -80,7 +80,7 @@ Follow these steps to get a local copy of Orpheus up and running:
 
 5. Run Orpheus to create settings.json:<br>
    `python orpheus.py`<br>
-    (use python3 on macOS)
+   [i](use python3 on macOS)[/i]<br>
 
 [![Watch how to install](https://i.imgur.com/pNqYcYh.png)](https://youtu.be/AGsYTQuO7nk)
 
