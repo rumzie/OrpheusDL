@@ -1281,7 +1281,12 @@ class Downloader:
                 
                 # Download tracks concurrently
                 results = self._concurrent_download_tracks(album_info.tracks, download_args_list, concurrent_downloads, performance_summary_indent=0)
-                
+
+                for result in results:
+                    if(isinstance(result[2], Exception)):
+                        # self.albums_with_failed_tracks.append(album_info.album_id)
+                        # self.albums_with_failed_tracks.append(album_info.album_id)
+                        self.albums_with_failed_tracks.append(list(album_info.track_extra_kwargs['data'].values())[result[0]]['album']['id'])
                 # Process results and collect rate-limited tracks
                 # (Errors are already reported by concurrent download progress monitor)
                 rate_limited_tracks = []
