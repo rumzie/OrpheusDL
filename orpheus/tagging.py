@@ -15,6 +15,7 @@ from mutagen.mp4 import MP4Tags
 from mutagen.oggopus import OggOpus
 from mutagen.oggvorbis import OggVorbis
 from mutagen.oggvorbis import OggVorbisHeaderError
+from datetime import date
 import mutagen
 
 from utils.exceptions import *
@@ -22,6 +23,7 @@ from utils.models import ContainerEnum, TrackInfo
 
 # Needed for Windows tagging support
 MP4Tags._padding = 0
+today = date.today()
 
 
 def _resize_image_if_needed(image_path: str, max_size_bytes: int = 16 * 1024 * 1024, target_resolution: tuple = (3000, 3000)) -> str:
@@ -118,8 +120,7 @@ def tag_file(file_path: str, image_path: str, track_info: TrackInfo, credits_lis
 
     tagger['title'] = track_info.name
     if track_info.album: tagger['album'] = track_info.album
-    if track_info.tags.album_artist: tagger['albumartist'] = track_info.tags.album_artist
-
+    if track_info.tags.album_artists: tagger['albumartist'] = track_info.tags.album_artists
     tagger['artist'] = track_info.artists
 
     if container == ContainerEnum.m4a or container == ContainerEnum.mp3:
@@ -183,6 +184,9 @@ def tag_file(file_path: str, image_path: str, track_info: TrackInfo, credits_lis
     if track_info.tags.description and container == ContainerEnum.m4a:
         tagger.RegisterTextKey('desc', 'description')
         tagger['description'] = track_info.tags.description
+
+    tagger['comment'] = 'Qobuz OrpheusDL ' + today.strftime("%m/%d/%y")
+    tagger['source'] = 'Qobuz'
 
     # add comment tag
     if track_info.tags.comment:

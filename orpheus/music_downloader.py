@@ -223,6 +223,18 @@ class Downloader:
         self.print = self.oprinter.oprint
         self.set_indent_number = self.oprinter.set_indent_number
 
+        self.track_download_count = 0
+        self.track_skipped_count = 0
+
+        self.track_not_streamable_count = 0
+        self.tracks_not_streamable = []
+
+        self.track_download_failed_count = 0
+        self.albums_with_failed_tracks = []
+
+        self.total_download_time: float = 0
+        
+
     def _is_auth_or_credentials_error(self, exc):
         """True if the exception is auth/credentials-related (retrying would not help)."""
         if isinstance(exc, AuthenticationError):
@@ -663,6 +675,7 @@ class Downloader:
             # Show performance summary in order: Download speed, Download time
             # Only show speed metrics if data was actually downloaded
             if total_mb > 0:
+                self.total_download_time += total_time
                 original_print(f"Download speed: {overall_speed_mbps:.0f} Mbps", drop_level=performance_summary_indent)
                 original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
             else:
@@ -679,6 +692,10 @@ class Downloader:
         actual_already_existed = sum(1 for r in results if r and r[2] is None and r[1] is None)  # Already existed
         actual_failed = sum(1 for r in results if r and r[2] is not None)  # Failed with error
         
+        self.track_download_count += actual_downloaded
+        self.track_skipped_count += actual_already_existed
+        self.track_download_failed_count += actual_failed
+
         # Show final summary only when there are failures
         if actual_failed > 0:
             # Check if most failures are SoundCloud FFmpeg-related
@@ -2004,11 +2021,39 @@ class Downloader:
             embedded_lyrics = getattr(track_info, 'lyrics', None) or ''
             
             # Get credits list (empty for now)
-            credits_list = []
-            
-            # Check if container supports tagging
-            tagging_supported_containers = [ContainerEnum.flac, ContainerEnum.mp3, ContainerEnum.m4a, ContainerEnum.ogg, ContainerEnum.opus, ContainerEnum.webm]
-            
+            # credits_list = []
+            if self.third_party_modules[ModuleModes.credits] and self.third_party_modules[ModuleModes.credits] != self.service_name:
+                credits_module_name = self.third_party_modules[ModuleModes.credits]
+                # self.print('Retrieving credits with ' + credits_module_name)
+                credits_module = self.loaded_modules[credits_module_name]
+
+                if credits_module_name != self.service_name:
+                    results: list[SearchResult] = self.search_by_tags(credits_module_name, track_info)
+                    credits_track_id = results[0].result_id if len(results) else None
+                    extra_kwargs = results[0].extra_kwargs if len(results) else None
+                else:
+                    credits_track_id = track_id
+                    extra_kwargs = {}
+                
+                if credits_track_id:
+                    credits_list = credits_module.get_track_credits(credits_track_id, **extra_kwargs)
+                    # if credits_list:
+                    #     self.print('Credits retrieved')
+                    # else:
+                    #     self.print('Credits module could not find any credits.')
+                # else:
+                #     self.print('Credits module could not find any credits.')
+            elif ModuleModes.credits in self.module_settings[self.service_name].module_supported_modes:
+                # self.print('Retrieving credits')
+                credits_list = self.service.get_track_credits(track_id, **track_info.credits_extra_kwargs)
+                # if credits_list:
+                #     self.print('Credits retrieved')
+                # else:
+                #     self.print('No credits available')
+                
+                # Check if container supports tagging
+                tagging_supported_containers = [ContainerEnum.flac, ContainerEnum.mp3, ContainerEnum.m4a, ContainerEnum.ogg, ContainerEnum.opus, ContainerEnum.webm]
+                
             if container in tagging_supported_containers:
                 # Tag the converted file - only pass artwork_path if embed_cover is enabled
                 embed_artwork_path = artwork_path if self.global_settings['covers']['embed_cover'] else None
@@ -2160,6 +2205,18 @@ class Downloader:
                 # Ensure extra_kwargs is always a dictionary
                 safe_extra_kwargs = extra_kwargs if extra_kwargs is not None else {}
                 track_info = self.service.get_track_info(track_id, quality_tier, codec_options, **safe_extra_kwargs)
+
+                if track_info.error:
+                    if "is not streamable" in track_info.error:
+                        print(f'NOT STREAMABLE: {track_info}')
+                        self.track_not_streamable_count +=1
+                        self.tracks_not_streamable.append(track_info.album_id)
+                    else:
+                        self.track_download_failed_count +=1
+                        self.albums_with_failed_tracks.append(track_info.album_id)
+
+                    self.print(track_info.error)
+                    self.print(f'=== Track {track_id} failed ===', drop_level=1)
 
                 # If we got track info, break out of retry loop
                 if track_info is not None:
@@ -2338,6 +2395,7 @@ class Downloader:
             
             symbols = self._get_status_symbols()
             d_print(f'=== {symbols["skip"]} Track skipped ===', drop_level=header_drop_level)
+            self.track_skipped_count +=1
 
             return return_with_blank_line("SKIPPED")
 
@@ -2347,6 +2405,37 @@ class Downloader:
             d_print('Downloading lyrics')
             with open(f'{os.path.splitext(track_location)[0]}.lrc', 'w', encoding='utf-8') as f:
                 f.write(track_info.lyrics)
+
+        # Get credits
+        credits_list = []
+        if self.third_party_modules[ModuleModes.credits] and self.third_party_modules[ModuleModes.credits] != self.service_name:
+            credits_module_name = self.third_party_modules[ModuleModes.credits]
+            # self.print('Retrieving credits with ' + credits_module_name)
+            credits_module = self.loaded_modules[credits_module_name]
+
+            if credits_module_name != self.service_name:
+                results: list[SearchResult] = self.search_by_tags(credits_module_name, track_info)
+                credits_track_id = results[0].result_id if len(results) else None
+                extra_kwargs = results[0].extra_kwargs if len(results) else None
+            else:
+                credits_track_id = track_id
+                extra_kwargs = {}
+            
+            if credits_track_id:
+                credits_list = credits_module.get_track_credits(credits_track_id, **extra_kwargs)
+                # if credits_list:
+                #     self.print('Credits retrieved')
+                # else:
+                #     self.print('Credits module could not find any credits.')
+            # else:
+            #     self.print('Credits module could not find any credits.')
+        elif ModuleModes.credits in self.module_settings[self.service_name].module_supported_modes:
+            # self.print('Retrieving credits')
+            credits_list = self.service.get_track_credits(track_id, **track_info.credits_extra_kwargs)
+            # if credits_list:
+            #     self.print('Credits retrieved')
+            # else:
+            #     self.print('No credits available')
 
         # Download audio
         try:
@@ -2633,6 +2722,36 @@ class Downloader:
             
             # Get credits list (empty for now)
             credits_list = []
+                    # Get credits
+            credits_list = []
+            if self.third_party_modules[ModuleModes.credits] and self.third_party_modules[ModuleModes.credits] != self.service_name:
+                credits_module_name = self.third_party_modules[ModuleModes.credits]
+                # self.print('Retrieving credits with ' + credits_module_name)
+                credits_module = self.loaded_modules[credits_module_name]
+
+                if credits_module_name != self.service_name:
+                    results: list[SearchResult] = self.search_by_tags(credits_module_name, track_info)
+                    credits_track_id = results[0].result_id if len(results) else None
+                    extra_kwargs = results[0].extra_kwargs if len(results) else None
+                else:
+                    credits_track_id = track_id
+                    extra_kwargs = {}
+                
+                if credits_track_id:
+                    credits_list = credits_module.get_track_credits(credits_track_id, **extra_kwargs)
+                    # if credits_list:
+                    #     self.print('Credits retrieved')
+                    # else:
+                    #     self.print('Credits module could not find any credits.')
+                # else:
+                #     self.print('Credits module could not find any credits.')
+            elif ModuleModes.credits in self.module_settings[self.service_name].module_supported_modes:
+                # self.print('Retrieving credits')
+                credits_list = self.service.get_track_credits(track_id, **track_info.credits_extra_kwargs)
+                # if credits_list:
+                #     self.print('Credits retrieved')
+                # else:
+                #     self.print('No credits available')
             
             # Check if container supports tagging
             tagging_supported_containers = [ContainerEnum.flac, ContainerEnum.mp3, ContainerEnum.m4a, ContainerEnum.ogg, ContainerEnum.opus, ContainerEnum.webm]
@@ -2661,6 +2780,7 @@ class Downloader:
 
             symbols = self._get_status_symbols()
             d_print(f'=== {symbols["success"]} Track completed ===', drop_level=header_drop_level)
+            self.track_download_count+=1
 
             # Clean up temporary artwork file
             if artwork_path and os.path.exists(artwork_path):
