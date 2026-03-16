@@ -202,7 +202,7 @@ def json_enum_serializer(obj):
 
 
 class Downloader:
-    def __init__(self, settings, module_controls, oprinter, path, use_ansi_colors=True):
+    def __init__(self, settings, module_controls, oprinter, path, third_party_modules=None, use_ansi_colors=True):
         self.global_settings = settings
         self.module_controls = module_controls
         self.oprinter = oprinter
@@ -210,7 +210,7 @@ class Downloader:
         self.service = None
         self.service_name = None
         self.download_mode = None
-        self.third_party_modules = None
+        self.third_party_modules = third_party_modules
         self.temp_dir = None  # Will be set by core.py
         self.indent_number = 0
         self.module_list = module_controls['module_list']
@@ -234,6 +234,35 @@ class Downloader:
 
         self.total_download_time: float = 0
         
+    def _fetch_metadata(self, track_info: TrackInfo):
+        """Fetches lyrics and credits using either the main service or third-party modules."""
+        # 1. Fetch Lyrics
+        if self.global_settings.get('lyrics', {}).get('embed_lyrics', True) or self.global_settings.get('lyrics', {}).get('save_synced_lyrics', True):
+            lyrics_module = self.third_party_modules.get('lyrics', 'default') if self.third_party_modules else 'default'
+            lyrics_service = self.service if lyrics_module == 'default' else self.loaded_modules.get(lyrics_module)
+            
+            if lyrics_service and hasattr(lyrics_service, 'get_track_lyrics'):
+                try:
+                    lyrics_info = lyrics_service.get_track_lyrics(track_info.id, **track_info.lyrics_extra_kwargs)
+                    track_info.lyrics = lyrics_info.embedded
+                    # Pass synced lyrics to the caller via an attribute for saving
+                    track_info.synced_lyrics = lyrics_info.synced
+                except Exception as e:
+                    self.print(f'Could not fetch lyrics: {e}', drop_level=1)
+
+        # 2. Fetch Credits
+        credits_module = self.third_party_modules.get('credits', 'default') if self.third_party_modules else 'default'
+        credits_service = self.service if credits_module == 'default' else self.loaded_modules.get(credits_module)
+        
+        if credits_service and hasattr(credits_service, 'get_track_credits'):
+            try:
+                # Store credits_list directly on track_info for tagging
+                track_info.credits_list = credits_service.get_track_credits(track_info.id, **track_info.credits_extra_kwargs)
+            except Exception as e:
+                self.print(f'Could not fetch credits: {e}', drop_level=1)
+                track_info.credits_list = []
+        else:
+            track_info.credits_list = []
 
     def _is_auth_or_credentials_error(self, exc):
         """True if the exception is auth/credentials-related (retrying would not help)."""
@@ -2004,6 +2033,9 @@ class Downloader:
                 
         # Tag file using thread pool to avoid blocking async event loop (after conversion)
         try:
+            # Fetch additional metadata (lyrics, credits)
+            await loop.run_in_executor(None, self._fetch_metadata, track_info)
+
             # Determine container from actual file extension (after potential conversion)
             file_extension = os.path.splitext(final_location)[1].lower()
             container_map = {
@@ -2065,6 +2097,18 @@ class Downloader:
                 tag_file(final_location, embed_artwork_path, track_info, credits_list, embedded_lyrics, container)
             else:
                 pass  # Skip tagging for unsupported containers like WAV
+
+            # Save synced lyrics if enabled
+            synced_lyrics = getattr(track_info, 'synced_lyrics', None)
+            if synced_lyrics and self.global_settings.get('lyrics', {}).get('save_synced_lyrics', True):
+                lrc_path = os.path.splitext(final_location)[0] + '.lrc'
+                try:
+                    def save_lrc():
+                        with open(lrc_path, 'w', encoding='utf-8') as f:
+                            f.write(synced_lyrics)
+                    await loop.run_in_executor(None, save_lrc)
+                except Exception as e:
+                    pass # Silently fail for lyrics saving
             
             # Also tag the original file if it was kept (matching old version exactly)
             if old_track_location and old_container:
@@ -2700,10 +2744,11 @@ class Downloader:
         if converted_location and converted_location != final_location:
             final_location = converted_location
 
-        # Tag file (after conversion so artwork gets embedded in converted file)
-        d_print('Tagging file...')
-
+        # Tag file based on old version logic
         try:
+            # Fetch additional metadata (lyrics, credits)
+            self._fetch_metadata(track_info)
+
             # Determine container from actual file extension (after potential conversion)
             file_extension = os.path.splitext(final_location)[1].lower()
             container_map = {
@@ -2767,6 +2812,16 @@ class Downloader:
                 tag_file(final_location, embed_artwork_path, track_info, credits_list, embedded_lyrics, container)
             else:
                 pass  # Skip tagging for unsupported containers like WAV
+
+            # Save synced lyrics if enabled
+            synced_lyrics = getattr(track_info, 'synced_lyrics', None)
+            if synced_lyrics and self.global_settings.get('lyrics', {}).get('save_synced_lyrics', True):
+                lrc_path = os.path.splitext(final_location)[0] + '.lrc'
+                try:
+                    with open(lrc_path, 'w', encoding='utf-8') as f:
+                        f.write(synced_lyrics)
+                except Exception as e:
+                    pass # Silently fail for lyrics saving
             
             # Also tag the original file if it was kept (matching old version exactly)
             if old_track_location and old_container:

@@ -381,6 +381,9 @@ class TrackInfo:
     cover_extra_kwargs: Optional[dict] = field(default_factory=dict)
     credits_extra_kwargs: Optional[dict] = field(default_factory=dict)
     lyrics_extra_kwargs: Optional[dict] = field(default_factory=dict)
+    lyrics: Optional[str] = None
+    synced_lyrics: Optional[str] = None
+    credits_list: Optional[list] = field(default_factory=list)
     error: Optional[str] = None
     preview_url: Optional[str] = None  # URL to audio preview (e.g. Beatport/Beatsource sample)
     additional: Optional[str] = None

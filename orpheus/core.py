@@ -424,7 +424,7 @@ class Orpheus:
 def orpheus_core_download(orpheus_session: Orpheus, media_to_download, third_party_modules, separate_download_module, output_path, use_ansi_colors=True):
     # Get global settings merged with defaults to ensure all required keys exist
     global_settings = orpheus_session.get_merged_global_settings()
-    downloader = Downloader(global_settings, orpheus_session.module_controls, oprinter, output_path, use_ansi_colors)
+    downloader = Downloader(global_settings, orpheus_session.module_controls, oprinter, output_path, third_party_modules, use_ansi_colors)
     downloader.full_settings = orpheus_session.settings  # Add access to full settings including modules
     os.makedirs('temp', exist_ok=True)
 
