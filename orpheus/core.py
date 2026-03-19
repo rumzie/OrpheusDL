@@ -221,7 +221,7 @@ class Orpheus:
             if class_:
                 class ModuleError(Exception): # TODO: get rid of this, as it is deprecated
                     def __init__(self, message):
-                        super().__init__(module + ' --> ' + str(message))
+                        super().__init__(str(message))
 
                 # Get settings with fallbacks to defaults for robustness on first run
                 global_settings = self.settings.get('global', {})
