@@ -439,8 +439,13 @@ def find_system_ffmpeg():
             os.path.expandvars('%USERPROFILE%/scoop/shims/ffmpeg.exe'),
             'C:/ffmpeg/bin/ffmpeg.exe',
         ]
-    else:
-        common_paths = []
+    # Add project root to common_paths as the highest priority
+    try:
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        root_ffmpeg = os.path.join(project_root, 'ffmpeg.exe' if system == 'Windows' else 'ffmpeg')
+        common_paths = [root_ffmpeg] + common_paths
+    except:
+        pass
     
     for path in common_paths:
             try:

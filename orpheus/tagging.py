@@ -162,8 +162,21 @@ def tag_file(file_path: str, image_path: str, track_info: TrackInfo, credits_lis
             tagger['Rating'] = 'Explicit' if track_info.explicit else 'Clean'
 
     if track_info.tags.genres: tagger['genre'] = track_info.tags.genres
-    if track_info.tags.isrc: tagger['isrc'] = track_info.tags.isrc.encode() if container == ContainerEnum.m4a else track_info.tags.isrc
-    if track_info.tags.upc: tagger['UPC'] = track_info.tags.upc.encode() if container == ContainerEnum.m4a else track_info.tags.upc
+    if track_info.tags.isrc:
+        if container == ContainerEnum.m4a:
+            tagger['isrc'] = track_info.tags.isrc.encode()
+        elif container in {ContainerEnum.ogg, ContainerEnum.flac, ContainerEnum.opus}:
+            tagger['ISRC'] = track_info.tags.isrc
+        else:
+            tagger['isrc'] = track_info.tags.isrc
+            
+    if track_info.tags.upc:
+        if container == ContainerEnum.m4a:
+            tagger['upc'] = track_info.tags.upc.encode()
+        elif container in {ContainerEnum.ogg, ContainerEnum.flac, ContainerEnum.opus}:
+            tagger['UPC'] = track_info.tags.upc
+        else:
+            tagger['UPC'] = track_info.tags.upc
 
     # add the label tag
     if track_info.tags.label:

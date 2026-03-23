@@ -88,7 +88,7 @@ def simplify_error_message(error_str: str) -> str:
     
     # Track unavailable/not found errors
     if any(phrase in error_lower for phrase in ['track is unavailable', 'track unavailable', 'unavailable']):
-        return "This song is unavailable."
+        return "Not available (404)"
     
     # Specific decryption service connection errors (Apple Music gamdl/amdecrypt wrapper)
     if 'local decryption service' in error_lower or 'decryption agent' in error_lower or 'formatnotavailable' in error_lower:
@@ -131,11 +131,15 @@ def simplify_error_message(error_str: str) -> str:
 
     # JSON API error responses with 404 code (e.g., Qobuz)
     if '"code":404' in error_str or '"code": 404' in error_str:
-        return "This song is unavailable."
+        return "Not available (404)"
     
     # HTTP status code 404 in plain text
     if 'status code 404' in error_lower or 'error 404' in error_lower:
-        return "This song is unavailable."
+        return "Not available (404)"
+
+    # Deezer specific errors
+    if 'total_reco' in error_lower:
+        return "Not available (404)"
     
     # Apple Music errors
     if 'apple music' in error_lower:
@@ -810,7 +814,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('playlist', playlist_id, e, 'Playlist', drop_level=1)
             else:
-                self.print(f'Could not get playlist info for {playlist_id}: {e}', drop_level=1)
+                self.print(f'Could not get playlist info for {playlist_id}: {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f'=== {symbols["error"]} Playlist failed ===', drop_level=1)
             return []
@@ -849,6 +853,13 @@ class Downloader:
         
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+        
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         
         if playlist_info.animated_cover_url and self.global_settings['covers']['save_animated_cover']:
             self.print('Downloading animated playlist cover')
@@ -1224,7 +1235,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('album', album_id, e, 'Album', drop_level=1)
             else:
-                self.print(f'Could not get album info for {album_id}: {e}', drop_level=1)
+                self.print(f'Could not get album info for {album_id}: {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f'=== {symbols["error"]} Album failed ===', drop_level=1)
             return []
@@ -1255,6 +1266,13 @@ class Downloader:
             self.print(f'Number of tracks: {number_of_tracks!s}')
             colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
             self.print(f'Platform: {colored_platform}')
+
+            # Display selected quality from global settings
+            quality_setting = self.global_settings['general']['download_quality']
+            pretty_quality = quality_setting.capitalize()
+            if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+            elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+            self.print(f'Quality: {pretty_quality}')
 
             if album_info.booklet_url and not os.path.exists(album_path + 'Booklet.pdf'):
                 self.print('Downloading booklet')
@@ -1568,7 +1586,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('artist', artist_id, e, 'Artist', drop_level=1)
             else:
-                self.print(f'Could not get artist info for {artist_id}: {self._service_key()} --> {e}', drop_level=1)
+                self.print(f'Could not get artist info for {artist_id}: {self._service_key()} --> {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f"=== {symbols['error']} Artist failed ===", drop_level=1)
             return
@@ -1597,6 +1615,13 @@ class Downloader:
         if number_of_tracks: self.print(f'Number of tracks: {number_of_tracks!s}')
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         artist_path = os.path.join(self.path, sanitise_name(artist_name)) + '/'
         
         # Create the artist directory if it doesn't exist
@@ -1834,6 +1859,13 @@ class Downloader:
             self.print(f'Number of tracks: {number_of_tracks!s}')
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         label_path = os.path.join(self.path, sanitise_name(label_name)) + '/'
         os.makedirs(label_path, exist_ok=True)
 
