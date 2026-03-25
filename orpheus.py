@@ -99,6 +99,7 @@ def main():
     parser.add_argument('-uw', '--use-wrapper', action='store_true', help='Use wrapper for downloading (Apple Music)')
     parser.add_argument('-m', '--module', help='Force a specific module to be used for the given URL(s)')
     parser.add_argument('-q', '--quality', help='Override download quality for this run (lossless, hifi, high, low, atmos, …)')
+    parser.add_argument('-ni', '--non-interactive', action='store_true', help='Skip interactive selection for search results.')
     parser.add_argument('arguments', nargs='*', help=help_)
     args = parser.parse_args()
 
@@ -212,6 +213,10 @@ def main():
                             else:
                                 print(f'{str(index)}. {item.name} {additional_details}')
                         
+                        if args.non_interactive:
+                            print("\nNon-interactive mode: Exiting after search.")
+                            exit(0)
+
                         selection_input = input('Selection: ').strip('\r\n ')
                         if selection_input.lower() in ['e', 'q', 'x', 'exit', 'quit']: exit()
                         if not selection_input.isdigit(): raise Exception('Input a number')
