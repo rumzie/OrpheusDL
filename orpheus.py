@@ -11,6 +11,7 @@ import json
 from urllib.parse import urlparse
 from orpheus.core import *
 from orpheus.music_downloader import beauty_format_seconds
+from utils.models import QualityEnum
 from utils.utils import find_system_ffmpeg
 try:
     from modules.spotify.spotify_api import SpotifyAuthError, SpotifyConfigError, SpotifyRateLimitDetectedError
@@ -96,10 +97,20 @@ def main():
     parser.add_argument('-sd', '--separatedownload', default='default', help='Select a different module that will download the playlist instead of the main module. Only for playlists.')
     parser.add_argument('-sc', '--song-codec', help='Select song codec for Apple Music (e.g. atmos, alac, aac-legacy)')
     parser.add_argument('-uw', '--use-wrapper', action='store_true', help='Use wrapper for downloading (Apple Music)')
+    parser.add_argument('-m', '--module', help='Force a specific module to be used for the given URL(s)')
+    parser.add_argument('-q', '--quality', help='Override download quality for this run (lossless, hifi, high, low, atmos, …)')
     parser.add_argument('arguments', nargs='*', help=help_)
     args = parser.parse_args()
 
     orpheus = Orpheus(args.private)
+    explicit_quality_override = bool(args.quality)
+
+    if args.quality:
+        q = args.quality.strip().lower()
+        valid = {m.name.lower() for m in QualityEnum}
+        if q not in valid:
+            raise Exception(f'Invalid --quality "{args.quality}". Choose one of: {", ".join(sorted(valid))}')
+        orpheus.settings.setdefault('global', {}).setdefault('general', {})['download_quality'] = q
     
     # Set global progress bar setting for the CLI
     from utils.utils import set_progress_bars_enabled
@@ -258,9 +269,10 @@ def main():
                     url = urlparse(link)
                     components = url.path.split('/')
 
-                    service_name = None
-                    for i in orpheus.module_netloc_constants:
-                        if re.findall(i, url.netloc): service_name = orpheus.module_netloc_constants[i]
+                    service_name = args.module.lower() if args.module else None
+                    if not service_name:
+                        for i in orpheus.module_netloc_constants:
+                            if re.findall(i, url.netloc): service_name = orpheus.module_netloc_constants[i]
                     if not service_name:
                         raise Exception(f'URL location "{url.netloc}" is not found in modules!')
                     if service_name not in media_to_download: media_to_download[service_name] = []
@@ -316,10 +328,16 @@ def main():
         if not media_to_download:
             print('No links given')
 
-        # Beatport quality workaround: high and low quality fail, fallback to lossless FLAC
+        # Beatport quality workaround: high and low quality fail, fallback to lossless FLAC.
+        # Only apply this when quality wasn't explicitly overridden for this run
+        # (GUI/webui use different code paths and expect LOW/HIGH to map to AAC).
         original_quality = None
         beatport_quality_override = False
-        if 'beatport' in media_to_download and orpheus.settings['global']['general']['download_quality'] in ['high', 'low']:
+        if (
+            'beatport' in media_to_download
+            and not explicit_quality_override
+            and orpheus.settings['global']['general']['download_quality'] in ['high', 'low']
+        ):
             original_quality = orpheus.settings['global']['general']['download_quality']
             orpheus.settings['global']['general']['download_quality'] = 'lossless'
             beatport_quality_override = True
