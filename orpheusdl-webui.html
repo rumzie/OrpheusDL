@@ -696,9 +696,36 @@
     }
 
     .setting-label {
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--text-color);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help-icon {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+      font-family: "Inter", sans-serif;
+    }
+
+    .help-icon:hover {
+      background: rgba(74, 158, 255, 0.15);
+      border-color: var(--accent-1);
+      color: #fff;
     }
 
     .setting-desc {
@@ -1120,7 +1147,10 @@
               <div style="font-size:11px; color:var(--text-muted); margin-top:3px;" id="dl-track-meta">See log below for
                 track details</div>
             </div>
-            <span class="badge badge-blue" id="dl-status">Downloading</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button id="dl-stop-btn" class="ghost-btn" style="display:none; color:#f87171; border-color:rgba(248,113,113,0.3); padding:4px 8px; font-size:10px; height:22px;" onclick="stopJob(activeJobId)">Stop</button>
+              <span class="badge badge-blue" id="dl-status">Downloading</span>
+            </div>
           </div>
           <div class="progress-bar">
             <div class="progress-fill" id="dl-bar" style="width:0%"></div>
@@ -1239,7 +1269,7 @@
         <div class="glass-card">
           <div class="card-label blue">GENERAL</div>
           <div class="setting-row">
-            <div class="setting-label" title="Folder where downloads are saved">Output Path</div>
+            <div class="setting-label" title="The main folder where all downloads will be saved.">Output Path <div class="help-icon">?</div></div>
             <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;min-width:200px;">
               <input type="text" id="global-download_path" data-path="global.general.download_path"
                 style="flex:1; min-width:0;" />
@@ -1266,7 +1296,7 @@
             </div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Default audio quality used for downloads">Quality</div>
+            <div class="setting-label" title="Select the desired audio quality preference.">Quality <div class="help-icon">?</div></div>
             <select id="global-download_quality" data-path="global.general.download_quality" style="width:180px;">
               <option value="hifi">hifi</option>
               <option value="lossless">lossless</option>
@@ -1275,12 +1305,12 @@
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Maximum number of search results returned per platform">Search Limit</div>
+            <div class="setting-label" title="Maximum number of results to display in the Search tab.">Search Limit <div class="help-icon">?</div></div>
             <input type="text" id="global-search_limit" data-path="global.general.search_limit"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Number of tracks downloaded simultaneously">Concurrent Downloads</div>
+            <div class="setting-label" title="Number of tracks to download simultaneously (1-10).&#10;&#10;Recommended values:&#10;• 1-3: Slower systems, limited bandwidth&#10;• 4-6: Most systems (balanced speed/stability)&#10;• 7-10: High-end systems, fast internet.">Concurrent Downloads <div class="help-icon">?</div></div>
             <div style="display:flex;align-items:center;gap:10px;">
               <input type="range" id="global-concurrent_downloads" data-path="global.general.concurrent_downloads"
                 min="1" max="10" step="1" style="width:140px;"
@@ -1293,12 +1323,12 @@
         <div class="glass-card">
           <div class="card-label blue">CODECS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Allow downloading proprietary codecs like MQA or AC-4">Proprietary Codecs</div>
+            <div class="setting-label" title="Enable potentially proprietary codecs like MQA (if supported by module).">Proprietary Codecs <div class="help-icon">?</div></div>
             <div class="toggle" id="global-proprietary_codecs" data-path="global.codecs.proprietary_codecs"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Allow downloading spatial audio formats like Dolby Atmos or 360 Reality Audio">Spatial Codecs</div>
+            <div class="setting-label" title="Enable spatial audio codecs like Dolby Atmos (if supported by module).">Spatial Codecs <div class="help-icon">?</div></div>
             <div class="toggle" id="global-spatial_codecs" data-path="global.codecs.spatial_codecs"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1307,17 +1337,17 @@
         <div class="glass-card">
           <div class="card-label blue">MODULE DEFAULTS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Which module is preferred for fetching lyrics (default = the platform being downloaded from)">Lyrics Module</div>
+            <div class="setting-label" title="Default module to use for fetching lyrics.">Lyrics Module <div class="help-icon">?</div></div>
             <input type="text" id="global-module_lyrics" data-path="global.module_defaults.lyrics"
               style="width:160px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Which module is preferred for fetching covers (default = the platform being downloaded from)">Covers Module</div>
+            <div class="setting-label" title="Default module to use for fetching cover art.">Covers Module <div class="help-icon">?</div></div>
             <input type="text" id="global-module_covers" data-path="global.module_defaults.covers"
               style="width:160px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Which module is preferred for fetching credits (default = the platform being downloaded from)">Credits Module</div>
+            <div class="setting-label" title="Default module to use for fetching track credits.">Credits Module <div class="help-icon">?</div></div>
             <input type="text" id="global-module_credits" data-path="global.module_defaults.credits"
               style="width:160px;" />
           </div>
@@ -1326,17 +1356,17 @@
         <div class="glass-card">
           <div class="card-label blue">LYRICS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed unsynced lyrics into the audio file as a tag">Embed Lyrics</div>
+            <div class="setting-label" title="Embed standard (unsynced) lyrics into the audio file.">Embed Lyrics <div class="help-icon">?</div></div>
             <div class="toggle" id="global-embed_lyrics" data-path="global.lyrics.embed_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed time-synced (LRC) lyrics into the audio file">Embed Synced Lyrics</div>
+            <div class="setting-label" title="Embed synced (LRC) lyrics into the audio file (requires embed_lyrics).">Embed Synced Lyrics <div class="help-icon">?</div></div>
             <div class="toggle" id="global-embed_synced_lyrics" data-path="global.lyrics.embed_synced_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Save synced lyrics as a separate .lrc file next to the audio">Save Synced Lyrics</div>
+            <div class="setting-label" title="Save synced lyrics as a separate .lrc file alongside the track.">Save Synced Lyrics <div class="help-icon">?</div></div>
             <div class="toggle" id="global-save_synced_lyrics" data-path="global.lyrics.save_synced_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1345,12 +1375,12 @@
         <div class="glass-card">
           <div class="card-label blue">COVERS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed the cover art into the audio file">Embed Cover</div>
+            <div class="setting-label" title="Embed the main cover art into the audio file.">Embed Cover <div class="help-icon">?</div></div>
             <div class="toggle" id="global-embed_cover" data-path="global.covers.embed_cover"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Compression level of the embedded cover (high = smaller file)">Main Compression</div>
+            <div class="setting-label" title="Compression level for embedded/saved main cover art.">Main Compression <div class="help-icon">?</div></div>
             <select id="global-main_compression" data-path="global.covers.main_compression" style="width:160px;">
               <option value="high">high</option>
               <option value="low">low</option>
@@ -1358,24 +1388,24 @@
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Resolution (px) of the embedded cover art">Main Resolution</div>
+            <div class="setting-label" title="Maximum resolution (pixels) for the main cover art.">Main Resolution <div class="help-icon">?</div></div>
             <input type="text" id="global-main_resolution" data-path="global.covers.main_resolution"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Save a separate external cover image file next to the audio">Save External</div>
+            <div class="setting-label" title="Save cover art from a third-party module (if configured).">Save External <div class="help-icon">?</div></div>
             <div class="toggle" id="global-save_external" data-path="global.covers.save_external"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="File format of the external cover image (jpg or png)">External Format</div>
+            <div class="setting-label" title="Format for the saved external cover art.">External Format <div class="help-icon">?</div></div>
             <select id="global-external_format" data-path="global.covers.external_format" style="width:160px;">
               <option value="png">png</option>
               <option value="jpg">jpg</option>
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Compression level of the external cover image">External Compression</div>
+            <div class="setting-label" title="Compression level for the saved external cover art.">External Compression <div class="help-icon">?</div></div>
             <select id="global-external_compression" data-path="global.covers.external_compression" style="width:160px;">
               <option value="low">low</option>
               <option value="high">high</option>
@@ -1383,12 +1413,12 @@
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Resolution (px) of the external cover image">External Resolution</div>
+            <div class="setting-label" title="Maximum resolution (pixels) for the saved external cover art.">External Resolution <div class="help-icon">?</div></div>
             <input type="text" id="global-external_resolution" data-path="global.covers.external_resolution"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Download and save animated covers where available">Save Animated Cover</div>
+            <div class="setting-label" title="Save animated cover art (GIF/MP4) if available.">Save Animated Cover <div class="help-icon">?</div></div>
             <div class="toggle" id="global-save_animated_cover" data-path="global.covers.save_animated_cover"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1397,19 +1427,19 @@
         <div class="glass-card">
           <div class="card-label blue">PLAYLIST</div>
           <div class="setting-row">
-            <div class="setting-label" title="Save a .m3u8 playlist file when downloading playlists">Save M3U</div>
+            <div class="setting-label" title="Create an M3U playlist file for playlist downloads.">Save M3U <div class="help-icon">?</div></div>
             <div class="toggle" id="global-save_m3u" data-path="global.playlist.save_m3u"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Use absolute or relative paths inside the .m3u file">Paths M3U</div>
+            <div class="setting-label" title="Select 'relative' or 'absolute' paths in M3U file.">Paths M3U <div class="help-icon">?</div></div>
             <select id="global-paths_m3u" data-path="global.playlist.paths_m3u" style="width:160px;">
               <option value="absolute">absolute</option>
               <option value="relative">relative</option>
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Write extended M3U format with track metadata (title, duration)">Extended M3U</div>
+            <div class="setting-label" title="Include extended info like track length in M3U file.">Extended M3U <div class="help-icon">?</div></div>
             <div class="toggle" id="global-extended_m3u" data-path="global.playlist.extended_m3u"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1418,12 +1448,12 @@
         <div class="glass-card">
           <div class="card-label blue">ARTIST DOWNLOADING</div>
           <div class="setting-row">
-            <div class="setting-label" title="Also download albums where the artist is a featured/credited artist, not the main artist">Return Credited Albums</div>
+            <div class="setting-label" title="Include albums where the artist is credited but not the main artist.">Return Credited Albums <div class="help-icon">?</div></div>
             <div class="toggle" id="global-return_credited_albums"
               data-path="global.artist_downloading.return_credited_albums" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="When downloading an artist, skip tracks that are already present in the download folder">Separate Tracks Skip Downloaded</div>
+            <div class="setting-label" title="When downloading artists, skip tracks that are part of albums already downloaded.">Separate Tracks Skip Downloaded <div class="help-icon">?</div></div>
             <div class="toggle" id="global-separate_tracks_skip_downloaded"
               data-path="global.artist_downloading.separate_tracks_skip_downloaded"
               onclick="this.classList.toggle('on')"></div>
@@ -1433,32 +1463,32 @@
         <div class="glass-card">
           <div class="card-label blue">FORMATTING</div>
           <div class="setting-row">
-            <div class="setting-label" title="Folder structure for albums, e.g. {artist}/{name}">Album Format</div>
+            <div class="setting-label" title="Folder structure for albums. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}&#10; {id}, {label}, {catalog_number}, {release_year}&#10; {upc}, {explicit}, {quality}">Album Format <div class="help-icon">?</div></div>
             <input type="text" id="global-album_format" data-path="global.formatting.album_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Folder name format for playlists">Playlist Format</div>
+            <div class="setting-label" title="Folder structure for playlists. Variables:&#10; {creator}, {creator_id}&#10; {name}, {tracks}&#10; {release_year}, {explicit}">Playlist Format <div class="help-icon">?</div></div>
             <input type="text" id="global-playlist_format" data-path="global.formatting.playlist_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="File name format for individual tracks, e.g. {artist} - {name}">Track Filename Format</div>
+            <div class="setting-label" title="Filename format for tracks. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}, {album}&#10; {track_number}, {total_tracks}, {disc_number}, {total_discs}&#10; {id}, {album_id}, {label}, {catalog_number}, {isrc}, {release_year}, {explicit}, {quality}">Track Filename Format <div class="help-icon">?</div></div>
             <input type="text" id="global-track_filename_format" data-path="global.formatting.track_filename_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Full path format when downloading a single track (not in an album context)">Single Full Path Format</div>
+            <div class="setting-label" title="Full path format (folder + filename) for single tracks not part of an album download.&#10;Uses same variables as Track Filename Format.">Single Full Path Format <div class="help-icon">?</div></div>
             <input type="text" id="global-single_full_path_format" data-path="global.formatting.single_full_path_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Pad track numbers with leading zeros (e.g. 01, 02)">Enable Zfill</div>
+            <div class="setting-label" title="Pads track/disc numbers with leading zeros (e.g., 01, 02).">Enable Zfill <div class="help-icon">?</div></div>
             <div class="toggle" id="global-enable_zfill" data-path="global.formatting.enable_zfill"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Always use the album format even for single tracks">Force Album Format</div>
+            <div class="setting-label" title="Use the album_format structure even for single track downloads.">Force Album Format <div class="help-icon">?</div></div>
             <div class="toggle" id="global-force_album_format" data-path="global.formatting.force_album_format"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1467,47 +1497,47 @@
         <div class="glass-card">
           <div class="card-label blue">ADVANCED</div>
           <div class="setting-row">
-            <div class="setting-label" title="Enable advanced login/token management across modules">Advanced Login System</div>
+            <div class="setting-label" title="Enable advanced login system (Use only if instructed by module documentation).">Advanced Login System <div class="help-icon">?</div></div>
             <div class="toggle" id="global-advanced_login_system" data-path="global.advanced.advanced_login_system"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Skip files that are already downloaded">Ignore Existing Files</div>
+            <div class="setting-label" title="Skips downloading files, if a file with the target name already exists in the output directory.">Ignore Existing Files <div class="help-icon">?</div></div>
             <div class="toggle" id="global-ignore_existing_files" data-path="global.advanced.ignore_existing_files"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Skip tracks where the artist doesn't match the requested artist">Ignore Different Artists</div>
+            <div class="setting-label" title="When downloading albums, ignore tracks where the artist differs from the main album artist.">Ignore Different Artists <div class="help-icon">?</div></div>
             <div class="toggle" id="global-ignore_different_artists"
               data-path="global.advanced.ignore_different_artists" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Keep original file when a codec conversion is performed">Conversion Keep Original</div>
+            <div class="setting-label" title="Keep the original file after successful codec conversion.">Conversion Keep Original <div class="help-icon">?</div></div>
             <div class="toggle" id="global-conversion_keep_original" data-path="global.advanced.conversion_keep_original"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Allow conversions that reduce quality (e.g. FLAC → MP3)">Enable Undesirable Conversions</div>
+            <div class="setting-label" title="Controls allowance to perform codec conversions that might result in quality loss or are not recommended.&#10;Examples:&#10;Lossy-to-Lossy&#10;Lossless-to-Lossy (if not preferred)&#10;Unnecessary Lossless-to-Lossless">Enable Undesirable Conversions <div class="help-icon">?</div></div>
             <div class="toggle" id="global-enable_undesirable_conversions" data-path="global.advanced.enable_undesirable_conversions"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Bypass subscription tier checks (use with caution)">Disable Subscription Checks</div>
+            <div class="setting-label" title="Prevents from checking if subscription for music service you are trying to download from is active.">Disable Subscription Checks <div class="help-icon">?</div></div>
             <div class="toggle" id="global-disable_subscription_checks" data-path="global.advanced.disable_subscription_checks"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Path to the ffmpeg binary used for audio conversion">FFmpeg Path</div>
+            <div class="setting-label" title="Full path to the ffmpeg executable &#10;If set to just 'ffmpeg', it's assumed to be in the system PATH.&#10;This is used for codec conversions.">FFmpeg Path <div class="help-icon">?</div></div>
             <input type="text" id="global-ffmpeg_path" data-path="global.advanced.ffmpeg_path"
               style="width:180px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Threshold for detecting cover art differences between tracks (lower = stricter)">Cover Variance Threshold</div>
+            <div class="setting-label" title="Tolerance for accepting covers with slightly different sizes (0-100).">Cover Variance Threshold <div class="help-icon">?</div></div>
             <input type="text" id="global-cover_variance_threshold" data-path="global.advanced.cover_variance_threshold"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Show verbose debug output in the terminal">Debug Mode</div>
+            <div class="setting-label" title="Allows various detailed informational and diagnostic messages to be printed to the console.&#10;Intended for troubleshooting issues only.">Debug Mode <div class="help-icon">?</div></div>
             <div class="toggle" id="global-debug_mode" data-path="global.advanced.debug_mode"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1618,6 +1648,39 @@
   </div><!-- end page-wrap -->
 
   <script>
+    // Global Help Tooltip Handler
+    document.addEventListener('click', (e) => {
+      const helpIcon = e.target.closest('.help-icon');
+      if (helpIcon) {
+        e.stopPropagation();
+        const label = helpIcon.closest('.setting-label');
+        if (label && label.title) {
+          alert(label.title);
+        } else if (helpIcon.title && helpIcon.title !== 'Click for info') {
+          alert(helpIcon.title);
+        }
+      }
+    });
+
+    // Active Jobs Tracking
+    let activeJobId = null;
+
+    async function stopJob(jobId) {
+      if (!jobId) return;
+      if (!confirm('Are you sure you want to stop the current download?')) return;
+      try {
+        const res = await fetch(`/api/job/stop/${jobId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          document.getElementById('dl-stop-btn').style.display = 'none';
+        } else {
+          alert('Error stopping download: ' + data.message);
+        }
+      } catch (e) {
+        alert('Failed to contact server to stop job.');
+      }
+    }
+
     function switchPage(id, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
@@ -1863,6 +1926,8 @@
         });
         const { job_id, error } = await res.json();
         if (error) { status.textContent = 'Error'; status.className = 'badge badge-red'; lbl.textContent = error; return; }
+        activeJobId = job_id;
+        document.getElementById('dl-stop-btn').style.display = 'inline-block';
         pollJob(job_id, bar, lbl, status);
       } catch (e) {
         status.textContent = 'Error'; status.className = 'badge badge-red';
@@ -1911,16 +1976,22 @@
           }
 
           const lastLine = job.log.slice(-1)[0] || '';
-          if (job.status === 'done') {
+          if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
             clearInterval(iv);
-            bar.style.width = '100%'; lbl.textContent = '100%';
-            status.textContent = 'Done ✓'; status.className = 'badge badge-green';
-          } else if (job.status === 'error') {
-            clearInterval(iv);
-            status.textContent = 'Error'; status.className = 'badge badge-red';
-            lbl.textContent = lastLine;
+            document.getElementById('dl-stop-btn').style.display = 'none';
+            if (job.status === 'done') {
+              bar.style.width = '100%'; lbl.textContent = '100%';
+              status.textContent = 'Done ✓'; status.className = 'badge badge-green';
+            } else if (job.status === 'error') {
+              status.textContent = 'Error'; status.className = 'badge badge-red';
+              lbl.textContent = lastLine;
+            } else if (job.status === 'stopped') {
+              status.textContent = 'Stopped'; status.className = 'badge badge-red';
+              lbl.textContent = 'Stopped by user';
+            }
           } else {
             status.textContent = 'Downloading'; status.className = 'badge badge-white';
+            document.getElementById('dl-stop-btn').style.display = 'inline-block';
           }
         } catch (e) { clearInterval(iv); }
       }, 800);
@@ -2164,8 +2235,8 @@
           });
           const { job_id, error } = await res.json();
           if (error) { alert('Error: ' + error); continue; }
-
-          window._activeDownloadJob = job_id;
+          activeJobId = job_id;
+          document.getElementById('dl-stop-btn').style.display = 'inline-block';
 
           // Wait for this job to finish before starting the next
           await new Promise(resolve => {
@@ -2181,21 +2252,28 @@
                   logEl.scrollTop = logEl.scrollHeight;
                 }
 
-                if (job.status === 'done') {
+                if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
                   clearInterval(iv);
-                  bar.style.width = '100%'; lbl.textContent = '100%';
-                  status.textContent = selectedItems.length > 1 && i < selectedItems.length - 1
-                    ? `Done (${i + 1}/${selectedItems.length})` : 'Done ✓';
-                  status.className = 'badge badge-green';
-                  resolve();
-                } else if (job.status === 'error') {
-                  clearInterval(iv);
-                  status.textContent = 'Error'; status.className = 'badge badge-red';
+                  document.getElementById('dl-stop-btn').style.display = 'none';
+                  
+                  if (job.status === 'done') {
+                    bar.style.width = '100%'; lbl.textContent = '100%';
+                    status.textContent = selectedItems.length > 1 && i < selectedItems.length - 1
+                      ? `Done (${i + 1}/${selectedItems.length})` : 'Done ✓';
+                    status.className = 'badge badge-green';
+                  } else if (job.status === 'error') {
+                    status.textContent = 'Error'; status.className = 'badge badge-red';
+                  } else if (job.status === 'stopped') {
+                    status.textContent = 'Stopped'; status.className = 'badge badge-red';
+                    lbl.textContent = 'Stopped by user';
+                    i = selectedItems.length; // Abort batch
+                  }
                   resolve();
                 } else {
                   status.textContent = selectedItems.length > 1
                     ? `Downloading (${i + 1}/${selectedItems.length})` : 'Downloading';
                   status.className = 'badge badge-white';
+                  document.getElementById('dl-stop-btn').style.display = 'inline-block';
                 }
               } catch (e) { clearInterval(iv); resolve(); }
             }, 800);
@@ -2385,7 +2463,12 @@
 
         const row = document.createElement('div');
         row.className = 'setting-row';
-        row.innerHTML = `<div class="setting-label">${humanizeSettingsKey(key)}</div>`;
+        
+        const labelWrapper = document.createElement('div');
+        labelWrapper.className = 'setting-label';
+        labelWrapper.textContent = humanizeSettingsKey(key);
+        
+        row.appendChild(labelWrapper);
         const right = document.createElement('div');
         right.style = 'display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end;';
 

@@ -24,6 +24,8 @@ ORPHEUS_PY = ORPHEUS_DIR / "orpheus.py"
 
 # In-memory job store  {job_id: {"status": ..., "log": [...], "progress": 0}}
 jobs: dict[str, dict] = {}
+# Active process tracking {job_id: subprocess.Popen}
+active_procs: dict[str, subprocess.Popen] = {}
 
 
 # ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -42,12 +44,14 @@ def run_orpheus(args: list[str], job_id: str):
         proc = subprocess.Popen(
             cmd,
             cwd=str(ORPHEUS_DIR),
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
             universal_newlines=True
         )
+        active_procs[job_id] = proc
 
         for line in proc.stdout:
             # Handle carriage returns from tqdm or other progress indicators
@@ -59,6 +63,15 @@ def run_orpheus(args: list[str], job_id: str):
             line = ansi_escape.sub('', line)
             line = line.strip('\r\n').strip()
             if not line: continue
+
+            # TIDAL auto-login handling: Detect prompt and send "1" (TV)
+            if "login type: (1) TV, (2) Mobile" in line:
+                try:
+                    proc.stdin.write("1\n")
+                    proc.stdin.flush()
+                    job["log"].append("TIDAL: Automatically selected (1) TV mode...")
+                except:
+                    pass
 
             # Whitelist search result lines: if it has metadata tags, it's NOT a logo
             if '|PLATFORM|' in line and '|ID|' in line:
@@ -97,6 +110,9 @@ def run_orpheus(args: list[str], job_id: str):
     except Exception as e:
         job["log"].append(f"ERROR: {e}")
         job["status"] = "error"
+    finally:
+        if job_id in active_procs:
+            del active_procs[job_id]
 
 
 # ── ROUTES ───────────────────────────────────────────────────────────────────
@@ -135,6 +151,30 @@ def api_download():
 
 
 # ── SEARCH ──
+
+@app.route("/api/job/stop/<job_id>", methods=["POST"])
+def api_job_stop(job_id):
+    """Terminate an active job."""
+    if job_id in active_procs:
+        try:
+            proc = active_procs[job_id]
+            proc.terminate() # Try graceful SIGTERM
+            # If it doesn't die in 2 seconds, kill it
+            def force_kill():
+                import time
+                time.sleep(2)
+                if proc.poll() is None: proc.kill()
+            threading.Thread(target=force_kill).start()
+            
+            if job_id in jobs:
+                jobs[job_id]["status"] = "stopped"
+                jobs[job_id]["log"].append("--- JOB STOPPED BY USER ---")
+            
+            return jsonify({"status": "success"})
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "error", "message": "Job not active"}), 404
+
 
 @app.route("/api/search", methods=["POST"])
 def api_search():
