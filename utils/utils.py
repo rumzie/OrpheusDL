@@ -393,13 +393,23 @@ async def download_to_temp_async(session, url, headers={}, extension='', enable_
 def get_clean_env():
     """Get a clean environment for subprocesses to avoid PyInstaller library conflicts."""
     import os
+    import sys
     env = os.environ.copy()
-    env.pop('LD_LIBRARY_PATH', None)
-    env.pop('DYLD_LIBRARY_PATH', None)
-    if 'LD_LIBRARY_PATH_ORIG' in env:
-        env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH_ORIG']
-    if 'DYLD_LIBRARY_PATH_ORIG' in env:
-        env['DYLD_LIBRARY_PATH'] = env['DYLD_LIBRARY_PATH_ORIG']
+    
+    # Only strip library paths if we are in a frozen (PyInstaller) environment
+    # or if the _ORIG version exists (which indicates we were spawned from a frozen parent)
+    is_frozen = getattr(sys, 'frozen', False)
+    has_orig_ld = 'LD_LIBRARY_PATH_ORIG' in env
+    has_orig_dyld = 'DYLD_LIBRARY_PATH_ORIG' in env
+
+    if is_frozen or has_orig_ld or has_orig_dyld:
+        env.pop('LD_LIBRARY_PATH', None)
+        env.pop('DYLD_LIBRARY_PATH', None)
+        if has_orig_ld:
+            env['LD_LIBRARY_PATH'] = env['LD_LIBRARY_PATH_ORIG']
+        if has_orig_dyld:
+            env['DYLD_LIBRARY_PATH'] = env['DYLD_LIBRARY_PATH_ORIG']
+    
     return env
 
 _ffmpeg_cache = None
@@ -418,6 +428,7 @@ def find_system_ffmpeg():
     
     system = platform.system()
     # Common FFmpeg locations by platform
+    common_paths = []
     if system == 'Darwin':
         # macOS - Homebrew and system locations
         common_paths = [

@@ -88,7 +88,22 @@ def simplify_error_message(error_str: str) -> str:
     
     # Track unavailable/not found errors
     if any(phrase in error_lower for phrase in ['track is unavailable', 'track unavailable', 'unavailable']):
-        return "This song is unavailable."
+        return "Not available (404)"
+    
+    # Specific decryption service connection errors (Apple Music gamdl/amdecrypt wrapper)
+    if 'local decryption service' in error_lower or 'decryption agent' in error_lower or 'formatnotavailable' in error_lower:
+        # Keep it exactly as is if it's the long descriptive version
+        if ('could not connect' in error_lower and 'docker/wrapper' in error_lower) or \
+           ('formatnotavailable' in error_lower):
+            # If it's a raw FormatNotAvailable, convert it to the user-friendly one
+            if 'formatnotavailable' in error_lower and 'docker/wrapper' not in error_lower:
+                 return "ALAC & Dolby Atmos require 'Use Wrapper' to be enabled. Please enable it in Apple Music settings or select 'High' quality instead to download in AAC."
+            
+            # Strip any leading prefixes if they were added upstream
+            if " - " in error_str: error_str = error_str.split(" - ", 1)[-1].strip()
+            if error_str.startswith("Apple Music:"): error_str = error_str[12:].strip()
+            return error_str
+        return error_str
     
     # JSON API error responses (e.g., Apple Music, Qobuz)
     try:
@@ -116,17 +131,19 @@ def simplify_error_message(error_str: str) -> str:
 
     # JSON API error responses with 404 code (e.g., Qobuz)
     if '"code":404' in error_str or '"code": 404' in error_str:
-        return "This song is unavailable."
+        return "Not available (404)"
     
     # HTTP status code 404 in plain text
     if 'status code 404' in error_lower or 'error 404' in error_lower:
-        return "This song is unavailable."
+        return "Not available (404)"
+
+    # Deezer specific errors
+    if 'total_reco' in error_lower:
+        return "Not available (404)"
     
     # Apple Music errors
     if 'apple music' in error_lower:
-        # Preserve specific amdecrypt/decryption agent instructions
-        if 'amdecrypt' in error_lower or 'decryption agent' in error_lower:
-            return error_str
+        # Preserve specific amdecrypt/decryption agent instructions (handled above now)
             
         if any(keyword in error_lower for keyword in ['ffmpeg', 'remux', 'processing', 'legacy remux']):
             return "Apple Music streaming error (FFmpeg required for processing)"
@@ -141,14 +158,17 @@ def simplify_error_message(error_str: str) -> str:
             if 'StopIteration' in actual:
                 return "Apple Music error: Requested quality/codec unavailable"
             
-            # If the actual part is reasonably short, use it
             if 5 < len(actual) < 200:
+                if actual.startswith("Apple Music:"):
+                    return actual
                 return f"Apple Music error: {actual}"
         
         # If no specific pattern matched, return the error if it's reasonably sized
         if len(error_str) < 500:
             if " - " in error_str and not error_str.split(" - ", 1)[-1].strip():
                 return "Apple Music error: Download failed (unknown cause)"
+            if error_str.startswith("Apple Music:") or "ALAC & Dolby Atmos require" in error_str or "local decryption service" in error_str.lower():
+                return error_str
             return f"Apple Music error: {error_str}"
                 
         return "Apple Music error (see logs for details)"
@@ -269,7 +289,7 @@ class Downloader:
         if isinstance(exc, AuthenticationError):
             return True
         err_str = str(exc).lower()
-        if 'credentials are missing' in err_str or 'cookies.txt' in err_str:
+        if 'credentials are' in err_str or 'credentials missing' in err_str or 'cookies.txt' in err_str:
             return True
         if 'not authenticated' in err_str or ('authentication' in err_str and 'required' in err_str):
             return True
@@ -286,7 +306,19 @@ class Downloader:
         symbols = self._get_status_symbols()
         service_key = self._service_key()
         msg = str(exc_or_message).strip()
-        if service_key != 'service':
+        # Avoid double prefixing
+        if msg.startswith(f"{service_key} --> "):
+            msg = msg[len(f"{service_key} --> "):]
+        
+        # Apple Music / Beatport / Beatsource: Remove the prefix entirely if the message already identifies the service
+        if (service_key == 'applemusic' and ('Apple Music' in msg or 'cookies.txt' in msg)) or \
+           (service_key == 'beatport' and 'Beatport' in msg) or \
+           (service_key == 'beatsource' and 'Beatsource' in msg) or \
+           (service_key == 'deezer' and 'Deezer' in msg) or \
+           (service_key == 'qobuz' and 'Qobuz' in msg) or \
+           (service_key == 'spotify' and 'Spotify' in msg):
+            self.print(f'Could not get {info_type} info for {resource_id}: {msg}', drop_level=drop_level)
+        elif service_key != 'service':
             self.print(f'Could not get {info_type} info for {resource_id}: {service_key} --> {msg}', drop_level=drop_level)
         else:
             self.print(f'Could not get {info_type} info for {resource_id}: {msg}', drop_level=drop_level)
@@ -798,7 +830,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('playlist', playlist_id, e, 'Playlist', drop_level=1)
             else:
-                self.print(f'Could not get playlist info for {playlist_id}: {e}', drop_level=1)
+                self.print(f'Could not get playlist info for {playlist_id}: {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f'=== {symbols["error"]} Playlist failed ===', drop_level=1)
             return []
@@ -837,6 +869,13 @@ class Downloader:
         
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+        
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         
         if playlist_info.animated_cover_url and self.global_settings['covers']['save_animated_cover']:
             self.print('Downloading animated playlist cover')
@@ -1212,7 +1251,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('album', album_id, e, 'Album', drop_level=1)
             else:
-                self.print(f'Could not get album info for {album_id}: {e}', drop_level=1)
+                self.print(f'Could not get album info for {album_id}: {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f'=== {symbols["error"]} Album failed ===', drop_level=1)
             return []
@@ -1243,6 +1282,13 @@ class Downloader:
             self.print(f'Number of tracks: {number_of_tracks!s}')
             colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
             self.print(f'Platform: {colored_platform}')
+
+            # Display selected quality from global settings
+            quality_setting = self.global_settings['general']['download_quality']
+            pretty_quality = quality_setting.capitalize()
+            if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+            elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+            self.print(f'Quality: {pretty_quality}')
 
             if album_info.booklet_url and not os.path.exists(album_path + 'Booklet.pdf'):
                 self.print('Downloading booklet')
@@ -1561,7 +1607,7 @@ class Downloader:
             if self._is_auth_or_credentials_error(e):
                 self._print_info_error_and_fail('artist', artist_id, e, 'Artist', drop_level=1)
             else:
-                self.print(f'Could not get artist info for {artist_id}: {self._service_key()} --> {e}', drop_level=1)
+                self.print(f'Could not get artist info for {artist_id}: {self._service_key()} --> {simplify_error_message(str(e))}', drop_level=1)
                 symbols = self._get_status_symbols()
                 self.print(f"=== {symbols['error']} Artist failed ===", drop_level=1)
             return
@@ -1590,6 +1636,13 @@ class Downloader:
         if number_of_tracks: self.print(f'Number of tracks: {number_of_tracks!s}')
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         artist_path = os.path.join(self.path, sanitise_name(artist_name)) + '/'
         
         # Create the artist directory if it doesn't exist
@@ -1827,6 +1880,13 @@ class Downloader:
             self.print(f'Number of tracks: {number_of_tracks!s}')
         colored_platform = get_colored_platform_name(self.module_settings[self.service_name].service_name)
         self.print(f'Platform: {colored_platform}')
+
+        # Display selected quality from global settings
+        quality_setting = self.global_settings['general']['download_quality']
+        pretty_quality = quality_setting.capitalize()
+        if quality_setting.lower() == 'hifi': pretty_quality = 'HiFi'
+        elif quality_setting.lower() == 'atmos': pretty_quality = 'Atmos'
+        self.print(f'Quality: {pretty_quality}')
         label_path = os.path.join(self.path, sanitise_name(label_name)) + '/'
         os.makedirs(label_path, exist_ok=True)
 
@@ -2288,7 +2348,21 @@ class Downloader:
 
                 # Auth/credentials errors: do not retry, show message immediately
                 if self._is_auth_or_credentials_error(e):
-                    self.print(f'Could not get track info for {display_track_id}: {self._service_key()} --> {e}')
+                    service_key = self._service_key()
+                    msg = str(e)
+                    if msg.startswith(f"{service_key} --> "):
+                        msg = msg[len(f"{service_key} --> "):]
+                    
+                    if (service_key == 'applemusic' and ('Apple Music' in msg or 'cookies.txt' in msg)) or \
+                       (service_key == 'beatport' and 'Beatport' in msg) or \
+                       (service_key == 'beatsource' and 'Beatsource' in msg) or \
+                       (service_key == 'deezer' and 'Deezer' in msg) or \
+                       (service_key == 'qobuz' and 'Qobuz' in msg) or \
+                       (service_key == 'spotify' and 'Spotify' in msg):
+                        self.print(f'Could not get track info for {display_track_id}: {msg}')
+                    else:
+                        self.print(f'Could not get track info for {display_track_id}: {service_key} --> {msg}')
+                    
                     symbols = self._get_status_symbols()
                     d_print(f'=== {symbols["error"]} Track failed ===', drop_level=header_drop_level)
                     return return_with_blank_line(None)
@@ -2298,7 +2372,21 @@ class Downloader:
                     self.print(f'Error getting track info, retrying in {retry_delay}s... (attempt {attempt + 1}/{max_retries})')
                     time.sleep(retry_delay)
                 else:
-                    self.print(f'Could not get track info for {display_track_id}: {self._service_key()} --> {e}')
+                    service_key = self._service_key()
+                    msg = str(e)
+                    if msg.startswith(f"{service_key} --> "):
+                        msg = msg[len(f"{service_key} --> "):]
+                        
+                    if (service_key == 'applemusic' and ('Apple Music' in msg or 'cookies.txt' in msg)) or \
+                       (service_key == 'beatport' and 'Beatport' in msg) or \
+                       (service_key == 'beatsource' and 'Beatsource' in msg) or \
+                       (service_key == 'deezer' and 'Deezer' in msg) or \
+                       (service_key == 'qobuz' and 'Qobuz' in msg) or \
+                       (service_key == 'spotify' and 'Spotify' in msg):
+                        self.print(f'Could not get track info for {display_track_id}: {msg}')
+                    else:
+                        self.print(f'Could not get track info for {display_track_id}: {service_key} --> {msg}')
+                        
                     symbols = self._get_status_symbols()
                     d_print(f'=== {symbols["error"]} Track failed ===', drop_level=header_drop_level)
                     return return_with_blank_line(None)
@@ -2320,7 +2408,19 @@ class Downloader:
             )
             service_key = self._service_key()
             if is_credentials_error and service_key != 'service':
-                self.print(f'Could not get track info for {display_track_id}: {service_key} --> {track_error}')
+                msg = str(track_error)
+                if msg.startswith(f"{service_key} --> "):
+                    msg = msg[len(f"{service_key} --> "):]
+                
+                if (service_key == 'applemusic' and ('Apple Music' in msg or 'cookies.txt' in msg)) or \
+                   (service_key == 'beatport' and 'Beatport' in msg) or \
+                   (service_key == 'beatsource' and 'Beatsource' in msg) or \
+                   (service_key == 'deezer' and 'Deezer' in msg) or \
+                   (service_key == 'qobuz' and 'Qobuz' in msg) or \
+                   (service_key == 'spotify' and 'Spotify' in msg):
+                    self.print(f'Could not get track info for {display_track_id}: {msg}')
+                else:
+                    self.print(f'Could not get track info for {display_track_id}: {service_key} --> {msg}')
             else:
                 self.print(f'Track unavailable: {track_error}')
             symbols = self._get_status_symbols()
@@ -2614,7 +2714,10 @@ class Downloader:
                         simplified_error = simplify_error_message(error_msg)
                         if getattr(self, 'full_settings', {}).get('global', {}).get('advanced', {}).get('debug_mode'):
                             d_print(f'Original error: {error_msg}')
-                        d_print(f'Download failed: {simplified_error}')
+                        if simplified_error.startswith("Apple Music:") or "local decryption service" in simplified_error.lower() or "ALAC & Dolby Atmos require" in simplified_error:
+                            d_print(simplified_error)
+                        else:
+                            d_print(f'Download failed: {simplified_error}')
                     symbols = self._get_status_symbols()
                     d_print(f'=== {symbols["error"]} Track failed ===', drop_level=header_drop_level)
                     # Restore original indent level if it was adjusted
@@ -2645,7 +2748,10 @@ class Downloader:
                     simplified_error = simplify_error_message(error_msg)
                     if getattr(self, 'full_settings', {}).get('global', {}).get('advanced', {}).get('debug_mode'):
                         d_print(f'Original error: {error_msg}')
-                    d_print(f'Download failed: {simplified_error}')
+                    if simplified_error.startswith("Apple Music:") or "local decryption service" in simplified_error.lower() or "ALAC & Dolby Atmos require" in simplified_error:
+                        d_print(simplified_error)
+                    else:
+                        d_print(f'Download failed: {simplified_error}')
                 symbols = self._get_status_symbols()
                 d_print(f'=== {symbols["error"]} Track failed ===', drop_level=header_drop_level)
                 # Restore original indent level if it was adjusted
