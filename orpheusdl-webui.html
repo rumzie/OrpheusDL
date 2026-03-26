@@ -357,6 +357,7 @@
     /* ── INPUTS ── */
     input[type="text"],
     input[type="url"],
+    input[type="password"],
     textarea,
     select {
       width: 100%;
@@ -445,6 +446,12 @@
     }
 
     /* ── RESULTS ── */
+    #results-list {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
     .result-item {
       display: flex;
       align-items: center;
@@ -455,6 +462,7 @@
       transition: var(--transition);
       border: 1px solid transparent;
       margin-bottom: 4px;
+      width: 100%;
     }
 
     .result-item:last-child {
@@ -1950,15 +1958,17 @@
         try {
           const res = await fetch('/api/job/' + job_id);
           const job = await res.json();
-          // Remember which result was selected before re-rendering
-          const prevSelected = list.querySelector('.result-item.selected');
-          const prevIndex = prevSelected ? prevSelected.dataset.index : null;
+          // Remember which results were selected before re-rendering
+          const selectedIndices = Array.from(list.querySelectorAll('.result-item.selected'))
+            .map(el => el.dataset.index);
+            
           renderSearchResults(job.log, list, job.status);
-          // Restore selection after re-render
-          if (prevIndex !== null) {
-            const restored = list.querySelector(`.result-item[data-index="${prevIndex}"]`);
+          
+          // Restore multiple selections after re-render
+          selectedIndices.forEach(idx => {
+            const restored = list.querySelector(`.result-item[data-index="${idx}"]`);
             if (restored) restored.classList.add('selected');
-          }
+          });
           if (job.status === 'done' || job.status === 'error') {
             clearInterval(iv);
           }
@@ -2123,6 +2133,10 @@
       const status = document.getElementById('dl-status');
       const tTitle = document.getElementById('dl-track-title');
       const tMeta = document.getElementById('dl-track-meta');
+      const logContainer = document.getElementById('dl-log-container');
+      const logEl = document.getElementById('dl-log');
+
+      if (logContainer) logContainer.style.display = 'block';
 
       for (let i = 0; i < selectedItems.length; i++) {
         const selected = selectedItems[i];
@@ -2132,6 +2146,8 @@
 
         bar.style.width = '0%'; lbl.textContent = '0%';
         status.textContent = 'Starting…'; status.className = 'badge badge-white';
+        if (logEl) logEl.textContent = '';
+
         if (tTitle) {
           tTitle.textContent = selectedItems.length > 1
             ? `${branding.name} (${i + 1}/${selectedItems.length})`
@@ -2159,6 +2175,12 @@
                 const job = await r.json();
                 bar.style.width = job.progress + '%';
                 lbl.textContent = job.progress + '%';
+
+                if (logEl && job.log) {
+                  logEl.innerHTML = linkify(job.log.join('\n'));
+                  logEl.scrollTop = logEl.scrollHeight;
+                }
+
                 if (job.status === 'done') {
                   clearInterval(iv);
                   bar.style.width = '100%'; lbl.textContent = '100%';
