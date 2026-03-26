@@ -1785,7 +1785,15 @@
         try {
           const res = await fetch('/api/job/' + job_id);
           const job = await res.json();
+          // Remember which result was selected before re-rendering
+          const prevSelected = list.querySelector('.result-item.selected');
+          const prevIndex = prevSelected ? prevSelected.dataset.index : null;
           renderSearchResults(job.log, list, job.status);
+          // Restore selection after re-render
+          if (prevIndex !== null) {
+            const restored = list.querySelector(`.result-item[data-index="${prevIndex}"]`);
+            if (restored) restored.classList.add('selected');
+          }
           if (job.status === 'done' || job.status === 'error') {
             clearInterval(iv);
           }

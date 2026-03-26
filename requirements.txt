@@ -23,3 +23,5 @@ customtkinter
 packaging
 httpx
 async_lru==2.1.0
+pywinstyles
+flask>=3.0.0
