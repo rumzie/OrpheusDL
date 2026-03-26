@@ -235,12 +235,13 @@ def api_browse():
         target_dir = Path(rel_path).expanduser()
         if not target_dir.is_absolute():
             target_dir = (ORPHEUS_DIR / rel_path).resolve()
-        
-        if not target_dir.exists() or not target_dir.is_dir():
-            # If expanding didn't help and it's not absolute, try just the path
-            target_dir = Path(rel_path)
-            if not target_dir.exists() or not target_dir.is_dir():
-                return jsonify({"error": "Path not found or not a directory"}), 404
+
+        # Auto-create the directory if it doesn't exist yet
+        if not target_dir.exists():
+            target_dir.mkdir(parents=True, exist_ok=True)
+
+        if not target_dir.is_dir():
+            return jsonify({"error": "Path is not a directory"}), 400
             
         items = []
         # Add parent directory
