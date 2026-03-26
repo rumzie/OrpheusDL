@@ -39,6 +39,29 @@
       border-radius: 4px;
     }
 
+    .dl-log {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      max-height: 200px;
+      overflow-y: auto;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .dl-log a {
+      color: var(--accent-1);
+      text-decoration: underline;
+      font-weight: 500;
+    }
+    .dl-log a:hover {
+      color: #fff;
+      text-decoration: none;
+    }
+
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
       border-radius: 4px;
@@ -753,16 +776,13 @@
       border: 1px solid rgba(34, 197, 94, 0.25);
     }
 
-    /* Platform chips and pills colored only when selected */
-    .result-item.selected .result-chip.platform-chip[data-platform="tidal"],
+    /* Platform pills colored only when selected */
     .platform-pill.selected[data-platform="tidal"] {
       background: rgba(51, 255, 231, 0.15);
       color: #33ffe7;
       border-color: rgba(51, 255, 231, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="apple"],
-    .result-item.selected .result-chip.platform-chip[data-platform="applemusic"],
     .platform-pill.selected[data-platform="apple"],
     .platform-pill.selected[data-platform="applemusic"] {
       background: rgba(250, 88, 106, 0.15);
@@ -770,49 +790,42 @@
       border-color: rgba(250, 88, 106, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="beatport"],
     .platform-pill.selected[data-platform="beatport"] {
       background: rgba(0, 255, 137, 0.15);
       color: #00ff89;
       border-color: rgba(0, 255, 137, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="beatsource"],
     .platform-pill.selected[data-platform="beatsource"] {
       background: rgba(22, 168, 244, 0.15);
       color: #16a8f4;
       border-color: rgba(22, 168, 244, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="deezer"],
     .platform-pill.selected[data-platform="deezer"] {
       background: rgba(162, 56, 255, 0.15);
       color: #a238ff;
       border-color: rgba(162, 56, 255, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="qobuz"],
     .platform-pill.selected[data-platform="qobuz"] {
       background: rgba(0, 112, 239, 0.15);
       color: #0070ef;
       border-color: rgba(0, 112, 239, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="soundcloud"],
     .platform-pill.selected[data-platform="soundcloud"] {
       background: rgba(255, 85, 2, 0.15);
       color: #ff5502;
       border-color: rgba(255, 85, 2, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="spotify"],
     .platform-pill.selected[data-platform="spotify"] {
       background: rgba(28, 198, 89, 0.15);
       color: #1cc659;
       border-color: rgba(28, 198, 89, 0.35);
     }
 
-    .result-item.selected .result-chip.platform-chip[data-platform="youtube"],
     .platform-pill.selected[data-platform="youtube"] {
       background: rgba(255, 0, 0, 0.15);
       color: #FF0000;
@@ -1108,7 +1121,7 @@
 
           <div id="dl-log-container" style="margin-top:12px; display:none;">
             <div class="card-label blue" style="margin-bottom:8px;">LOG</div>
-            <div id="dl-log"
+            <div id="dl-log" class="dl-log"
               style="padding:8px; background:rgba(0,0,0,0.2); border-radius:8px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-muted); max-height:300px; overflow-y:auto; white-space:pre-wrap; border:1px solid var(--card-border);">
             </div>
           </div>
@@ -1148,16 +1161,6 @@
         </div>
       </div>
 
-      <div class="glass-card">
-        <div class="card-label blue">QUALITY</div>
-        <div class="codec-row">
-          <div class="codec-chip selected" onclick="selectCodec(this)">ATMOS</div>
-          <div class="codec-chip" onclick="selectCodec(this)">HIFI</div>
-          <div class="codec-chip" onclick="selectCodec(this)">LOSSLESS</div>
-          <div class="codec-chip" onclick="selectCodec(this)">HIGH</div>
-          <div class="codec-chip" onclick="selectCodec(this)">LOW</div>
-        </div>
-      </div>
 
       <div class="glass-card">
         <div class="card-label blue">QUERY</div>
@@ -1167,7 +1170,7 @@
         </div>
       </div>
 
-      <div id="results-section" style="display:none;">
+      <div id="results-section" style="display:none; margin-bottom:20px;">
         <div class="glass-card">
           <div class="card-label blue">RESULTS</div>
           <div id="results-list"></div>
@@ -1181,6 +1184,17 @@
           </svg>
           Download selected
         </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">QUALITY</div>
+        <div class="codec-row">
+          <div class="codec-chip selected" onclick="selectCodec(this)">ATMOS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIFI</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOSSLESS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIGH</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOW</div>
+        </div>
       </div>
     </div>
 
@@ -1683,6 +1697,27 @@
       }
     }
 
+    // ── LINKIFY ──
+    function linkify(text) {
+      // 1. Repair split URLs (specific to OrpheusDL output)
+      // Automatically join lines beginning with 'URL: ' that are split by newlines
+      // until a common phrase like 'If the browser' or another newline/end appears.
+      text = text.replace(/URL:\s+([\s\S]+?)(?=\s+If the browser|$)/g, (match, p1) => {
+          // Remove all newlines and spaces from the URL segment to rejoin it
+          return 'URL: ' + p1.replace(/\s+/g, '');
+      });
+
+      // 2. Escape non-URL parts safely to prevent XSS
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      // 3. Robust URL detection regex
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      
+      // We need to handle the case where the regex might match an already-escaped &amp;
+      // In Javascript, replace() with $1 works fine even if it contains &amp;
+      return escaped.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+    }
+
     // ── POLL JOB ──
     function pollJob(job_id, bar, lbl, status) {
       const logContainer = document.getElementById('dl-log-container');
@@ -1698,7 +1733,7 @@
           lbl.textContent = job.progress + '%';
 
           if (logEl && job.log) {
-            logEl.textContent = job.log.join('\n');
+            logEl.innerHTML = linkify(job.log.join('\n'));
             logEl.scrollTop = logEl.scrollHeight;
           }
 
@@ -1809,7 +1844,24 @@
           });
         }
       }
-      if (!results.length) {
+
+      // Apply per-platform limit when "All" is selected
+      const platformPill = document.querySelector('#search-platforms .platform-pill.selected');
+      const selectedPlatform = platformPill ? platformPill.dataset.platform : '';
+      let filteredResults = results;
+      if (selectedPlatform === 'all' && results.length > 0) {
+        const searchLimit = (settingsCache && settingsCache.global && settingsCache.global.general && settingsCache.global.general.search_limit)
+          ? parseInt(settingsCache.global.general.search_limit) || 10
+          : 10;
+        const perPlatformCount = {};
+        filteredResults = results.filter(r => {
+          const key = (r.platform || '_unknown').toLowerCase();
+          perPlatformCount[key] = (perPlatformCount[key] || 0) + 1;
+          return perPlatformCount[key] <= searchLimit;
+        });
+      }
+
+      if (!filteredResults.length) {
         let msg = 'No results found.';
         let icon = '';
         if (status === 'error') msg = 'Search failed. See log below:';
@@ -1841,10 +1893,9 @@
         'youtube': 'YouTube.png'
       };
 
-      list.innerHTML = results.map(r => {
+      list.innerHTML = filteredResults.map(r => {
         const platformIcon = r.platform ? platformMap[r.platform.toLowerCase()] : null;
         const branding = getPlatformBranding(r.platform || 'Search');
-        const platformChip = r.platform ? `<span class="result-chip platform-chip" data-platform="${r.platform.toLowerCase()}">${branding.name}</span>` : '';
 
         return `
       <div class="result-item" onclick="selectResult(this)" data-index="${r.num}" data-platform="${r.platform || ''}">
@@ -1859,13 +1910,23 @@
             <div class="result-artist">${r.artist}</div>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
-            ${platformChip}
-            ${r.chips.map(c => `<span class="result-chip">${c}</span>`).join('')}
+            ${r.chips.flatMap(c => {
+              const hasAtmos = c.includes('ATMOS');
+              const hasHiRes = c.includes('HI-RES');
+              if (hasAtmos || hasHiRes) {
+                const subchips = [];
+                if (hasAtmos) subchips.push(`<span class="result-chip"><img src="/platforms/dolby.svg" style="height:10px; margin-right:4px; vertical-align:middle;">ATMOS</span>`);
+                if (hasHiRes) subchips.push(`<span class="result-chip"><img src="/platforms/hires.svg" style="height:12px; margin-right:4px; vertical-align:middle;">HI-RES</span>`);
+                return subchips;
+              }
+              return `<span class="result-chip">${c}</span>`;
+            }).join('')}
           </div>
         </div>
       </div>
     `}).join('');
     }
+
 
     function selectResult(el) {
       el.closest('#results-list').querySelectorAll('.result-item').forEach(i => i.classList.remove('selected'));
@@ -1894,11 +1955,21 @@
         document.getElementById('dl-progress').style.display = 'block';
         window._activeDownloadJob = job_id;
 
-        const branding = getPlatformBranding(selected.dataset.platform || 'Search');
+        const bar = document.getElementById('dl-bar');
+        const lbl = document.getElementById('dl-pct');
+        const status = document.getElementById('dl-status');
+        const tTitle = document.getElementById('dl-track-title');
+        const tMeta = document.getElementById('dl-track-meta');
+        const platform = selected.dataset.platform || 'Search';
+        const branding = getPlatformBranding(platform);
+
+        bar.style.width = '0%'; lbl.textContent = '0%';
+        status.textContent = 'Starting…'; status.className = 'badge badge-white';
         if (tTitle) {
           tTitle.textContent = branding.name;
           tTitle.style.color = branding.color;
         }
+        if (tMeta) tMeta.textContent = quality ? `${quality} · from search` : 'Search result';
 
         pollJob(job_id, bar, lbl, status);
       } catch (e) {

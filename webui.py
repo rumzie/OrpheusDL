@@ -35,6 +35,8 @@ def run_orpheus(args: list[str], job_id: str):
     cmd = ["python", "-u", str(ORPHEUS_PY)] + args + ["--progress"]
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     progress_re = re.compile(r'(\d+)%')
+    # tqdm progress bar lines look like: "33%|####2  | 6.29M/19.2M [00:00<00:01, 8.31MB/s]"
+    tqdm_re = re.compile(r'^\d+%\|')
 
     try:
         proc = subprocess.Popen(
@@ -54,13 +56,18 @@ def run_orpheus(args: list[str], job_id: str):
                 parts = line.split('\r')
                 line = parts[-1] if parts[-1].strip() else (parts[-2] if len(parts) > 1 else parts[0])
             
-            # Filter out the ASCII logo
-            if any(marker in line for marker in ['____', '/  \\', '|  |', '|__|', '\\____']):
-                continue
-                
             line = ansi_escape.sub('', line)
             line = line.strip('\r\n').strip()
             if not line: continue
+
+            # Whitelist search result lines: if it has metadata tags, it's NOT a logo
+            if '|PLATFORM|' in line and '|ID|' in line:
+                pass
+            else:
+                # Filter out the ASCII logo
+                logo_markers = ['____', '/  \\', '|  |', '|__|', '\\____']
+                if any(marker in line for marker in logo_markers):
+                    continue
            
             # Simple progress parsing
             # Look for percentage (tqdm style: " 10%|#   |")
@@ -73,9 +80,13 @@ def run_orpheus(args: list[str], job_id: str):
             elif "Done" in line or "Success" in line:
                 jobs[job_id]["progress"] = 100
 
-            # Only append to log if it's not a high-frequency progress line or if it contains useful info
-            # For now, append all to see if it works, but we can filter later.
+            # Skip tqdm progress bar lines from the visible log (they clutter output)
+            # Progress percentage is already extracted above.
+            if tqdm_re.match(line):
+                continue
+
             jobs[job_id]["log"].append(line)
+
             
         proc.wait()
         if proc.returncode == 0:
