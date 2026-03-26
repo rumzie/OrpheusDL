@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrpheusDL</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d0f14;
+      --text-color: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent-1: #4a9eff;
+      --accent-2: #2e74bc;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --glass-blur: blur(12px);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    body {
+      font-family: "Roboto Mono", monospace;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── ORBS ── */
+    .bg-wrapper {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.4;
+      animation: float 20s infinite alternate ease-in-out;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, var(--accent-1), transparent 70%);
+      top: -100px;
+      left: -100px;
+    }
+
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--accent-2), transparent 70%);
+      top: 40%;
+      right: -150px;
+      animation-delay: -5s;
+    }
+
+    .orb-3 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #8a2be2, transparent 70%);
+      bottom: 10%;
+      left: 20%;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(50px, 50px) scale(1.1);
+      }
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 5%;
+      background: rgba(13, 15, 20, 0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .logo {
+      font-family: "Inter", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo span {
+      color: var(--accent-2);
+    }
+
+    .logo svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 30px;
+      padding: 4px;
+      backdrop-filter: var(--glass-blur);
+    }
+
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: "Inter", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 18px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-color);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      color: #fff;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 100px 20px 80px;
+    }
+
+    .page {
+      display: none;
+      animation: fadein 0.3s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadein {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-eyebrow {
+      font-family: "Inter", sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .page-heading {
+      font-family: "Inter", sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 32px;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    .page-heading .gradient-text {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── GLASS CARDS ── */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 22px;
+      margin-bottom: 14px;
+      transition: var(--transition);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .card-label.blue {
+      color: var(--accent-1);
+    }
+
+    /* ── PLATFORM PILLS ── */
+    .platform-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .platform-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 30px;
+      padding: 7px 15px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .platform-pill:hover {
+      background: rgba(74, 158, 255, 0.08);
+      border-color: rgba(74, 158, 255, 0.3);
+      color: var(--text-color);
+      transform: translateY(-1px);
+    }
+
+    .platform-pill.selected {
+      background: rgba(74, 158, 255, 0.12);
+      border-color: var(--accent-1);
+      color: var(--accent-1);
+    }
+
+    /* ── TYPE BUTTONS ── */
+    .type-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .type-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .type-btn:hover {
+      color: var(--text-color);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .type-btn.selected {
+      background: rgba(74, 158, 255, 0.12);
+      border-color: var(--accent-1);
+      color: var(--accent-1);
+    }
+
+    /* ── INPUTS ── */
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: var(--text-color);
+      font-family: "Roboto Mono", monospace;
+      font-size: 13px;
+      padding: 12px 16px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.12);
+      background: rgba(74, 158, 255, 0.04);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* ── GLASS BUTTON ── */
+    .glass-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 26px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      font-family: "Inter", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 30px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .glass-btn:hover {
+      background: rgba(74, 158, 255, 0.15);
+      border-color: var(--accent-1);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(74, 158, 255, 0.2);
+    }
+
+    .glass-btn:active {
+      transform: translateY(0);
+    }
+
+    .glass-btn.primary {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      border-color: transparent;
+    }
+
+    .glass-btn.primary:hover {
+      background: linear-gradient(135deg, #6db3ff, var(--accent-1));
+      box-shadow: 0 10px 30px rgba(74, 158, 255, 0.35);
+    }
+
+    .glass-btn.success {
+      background: rgba(34, 197, 94, 0.12) !important;
+      color: #4ade80 !important;
+      border: 1px solid rgba(34, 197, 94, 0.5) !important;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15) !important;
+    }
+
+    /* ── SEARCH ROW ── */
+    .search-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-row input {
+      flex: 1;
+    }
+
+    /* ── RESULTS ── */
+    .result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      margin-bottom: 4px;
+    }
+
+    .result-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .result-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateX(6px);
+    }
+
+    .result-item.selected {
+      background: rgba(74, 158, 255, 0.08);
+      border-color: rgba(74, 158, 255, 0.3);
+    }
+
+    .result-num {
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 24px;
+      text-align: center;
+      opacity: 0.6;
+    }
+
+    .result-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .result-header {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .result-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-artist {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      opacity: 0.8;
+    }
+
+    .result-cover-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .platform-icon-overlay {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      background: var(--bg-color);
+      border-radius: 50%;
+      padding: 2px;
+      border: 1.5px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .platform-icon-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .result-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .result-dur {
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .result-chip {
+      font-family: "Roboto Mono", monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 150px;
+      letter-spacing: 0.5px;
+    }
+
+    .result-cover-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-cover {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .result-cover-placeholder {
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    /* ── CODEC CHIPS ── */
+    .codec-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .codec-chip {
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .codec-chip:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      color: var(--text-color);
+    }
+
+    .codec-chip.selected {
+      border-color: var(--accent-1);
+      color: var(--accent-1);
+      background: rgba(74, 158, 255, 0.08);
+    }
+
+    /* ── URL TAGS ── */
+    .url-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--accent-1);
+      font-family: "Roboto Mono", monospace;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-bar {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    /* ── SETTINGS ── */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      /* Added for mobile responsiveness */
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .setting-row:first-child {
+      padding-top: 0;
+    }
+
+    .setting-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* ── TOGGLE ── */
+    .toggle {
+      width: 40px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      border-radius: 11px;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .toggle.on {
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      border-color: transparent;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .toggle.on::after {
+      transform: translateX(18px);
+    }
+
+    /* ── BADGES ── */
+    .badge {
+      font-family: "Roboto Mono", monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .badge-blue {
+      background: rgba(74, 158, 255, 0.12);
+      color: var(--accent-1);
+      border: 1px solid rgba(74, 158, 255, 0.25);
+    }
+
+    .badge-white {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .badge-yellow {
+      background: rgba(234, 179, 8, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(234, 179, 8, 0.25);
+    }
+
+    .badge-red {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .badge-green {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    /* Platform chips and pills colored only when selected */
+    .result-item.selected .result-chip.platform-chip[data-platform="tidal"],
+    .platform-pill.selected[data-platform="tidal"] {
+      background: rgba(51, 255, 231, 0.15);
+      color: #33ffe7;
+      border-color: rgba(51, 255, 231, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="apple"],
+    .result-item.selected .result-chip.platform-chip[data-platform="applemusic"],
+    .platform-pill.selected[data-platform="apple"],
+    .platform-pill.selected[data-platform="applemusic"] {
+      background: rgba(250, 88, 106, 0.15);
+      color: #FA586A;
+      border-color: rgba(250, 88, 106, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="beatport"],
+    .platform-pill.selected[data-platform="beatport"] {
+      background: rgba(0, 255, 137, 0.15);
+      color: #00ff89;
+      border-color: rgba(0, 255, 137, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="beatsource"],
+    .platform-pill.selected[data-platform="beatsource"] {
+      background: rgba(22, 168, 244, 0.15);
+      color: #16a8f4;
+      border-color: rgba(22, 168, 244, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="deezer"],
+    .platform-pill.selected[data-platform="deezer"] {
+      background: rgba(162, 56, 255, 0.15);
+      color: #a238ff;
+      border-color: rgba(162, 56, 255, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="qobuz"],
+    .platform-pill.selected[data-platform="qobuz"] {
+      background: rgba(0, 112, 239, 0.15);
+      color: #0070ef;
+      border-color: rgba(0, 112, 239, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="soundcloud"],
+    .platform-pill.selected[data-platform="soundcloud"] {
+      background: rgba(255, 85, 2, 0.15);
+      color: #ff5502;
+      border-color: rgba(255, 85, 2, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="spotify"],
+    .platform-pill.selected[data-platform="spotify"] {
+      background: rgba(28, 198, 89, 0.15);
+      color: #1cc659;
+      border-color: rgba(28, 198, 89, 0.35);
+    }
+
+    .result-item.selected .result-chip.platform-chip[data-platform="youtube"],
+    .platform-pill.selected[data-platform="youtube"] {
+      background: rgba(255, 0, 0, 0.15);
+      color: #FF0000;
+      border-color: rgba(255, 0, 0, 0.35);
+    }
+
+    /* ── GHOST BTN ── */
+    .ghost-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: "Roboto Mono", monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .ghost-btn:hover {
+      border-color: var(--accent-1);
+      color: var(--accent-1);
+    }
+
+    /* ── ICON GHOST BTN (compact) ── */
+    .ghost-icon-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .ghost-icon-btn:hover {
+      border-color: var(--accent-1);
+      color: var(--accent-1);
+    }
+
+    .ghost-icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ── ABOUT ── */
+    .about-logo {
+      font-family: "Inter", sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+      line-height: 1.1;
+    }
+
+    .about-logo .white {
+      color: #fff;
+    }
+
+    .about-logo .blue {
+      color: var(--accent-2);
+    }
+
+    .platform-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .platform-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 13px;
+      font-family: "Roboto Mono", monospace;
+    }
+
+    .platform-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .platform-table td:first-child {
+      color: var(--text-muted);
+    }
+
+    .platform-table td:last-child {
+      text-align: right;
+    }
+
+    /* ── LINK ── */
+    a.link {
+      color: var(--accent-1);
+      text-decoration: none;
+      font-size: 12px;
+      transition: var(--transition);
+      font-family: "Roboto Mono", monospace;
+    }
+
+    a.link:hover {
+      color: #fff;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-family: "Roboto Mono", monospace;
+    }
+
+    .radio-label input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent-1);
+      cursor: pointer;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-color);
+      font-family: "Roboto Mono", monospace;
+      font-size: 12px;
+      padding: 7px 10px;
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    select:focus {
+      border-color: var(--accent-1);
+    }
+
+    @media (max-width: 480px) {
+      nav {
+        padding: 14px 16px;
+      }
+
+      .nav-tab {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .page-wrap {
+        padding: 88px 14px 60px;
+      }
+
+      .page-heading {
+        font-size: 1.6rem;
+      }
+    }
+
+    /* ── SPINNER ── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent-1);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BACKGROUND ORBS -->
+  <div class="bg-wrapper">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">
+      <img src="https://orpheusdl-gui.x10.mx/assets/icon.svg" alt="OrpheusDL" style="width:32px; height:32px;" />
+    </a>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchPage('url', this)">Download</button>
+      <button class="nav-tab" onclick="switchPage('search', this)">Search</button>
+      <button class="nav-tab" onclick="switchPage('settings', this)">Settings</button>
+      <button class="nav-tab" onclick="switchPage('about', this)">About</button>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- ══ URL ══ -->
+    <div class="page active" id="page-url">
+      <div class="page-eyebrow">Download</div>
+
+      <div class="glass-card">
+        <div class="card-label blue">URL</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="text" id="url-input" placeholder="https://soundcloud.com/artist/track-name"
+            style="flex:1; min-width:0;" />
+          <button class="ghost-btn"
+            style="padding:10px; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid var(--card-border);"
+            onclick="document.getElementById('url-input').value=''; document.getElementById('url-input').focus();"
+            title="Clear URL">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="dynamic-url-hint" class="result-meta" style="margin-top:8px; display:none;">
+          <span style="color:var(--text-muted);">Supported:</span> <span class="tag">track</span><span
+            class="tag">album</span><span class="tag">playlist</span><span class="tag">artist</span>
+        </div>
+        <script>
+          document.getElementById('url-input').addEventListener('input', function (e) {
+            const val = e.target.value.toLowerCase();
+            const hint = document.getElementById('dynamic-url-hint');
+            if (val.includes('beatport') || val.includes('beatsource')) {
+              hint.innerHTML = '<span style="color:var(--text-muted);">Supported:</span> <span class="tag">track</span><span class="tag">album</span><span class="tag">playlist</span><span class="tag">artist</span><span class="tag">label</span>';
+            } else if (val.includes('youtube')) {
+              hint.innerHTML = '<span style="color:var(--text-muted);">Supported:</span> <span class="tag">track</span><span class="tag">playlist</span><span class="tag">channel</span>';
+            } else {
+              hint.innerHTML = '<span style="color:var(--text-muted);">Supported:</span> <span class="tag">track</span><span class="tag">album</span><span class="tag">playlist</span><span class="tag">artist</span>';
+            }
+          });
+        </script>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">QUALITY</div>
+        <div class="codec-row">
+          <div class="codec-chip selected" onclick="selectCodec(this)">ATMOS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIFI</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOSSLESS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIGH</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOW</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">DOWNLOAD FOLDER</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="text" id="url-download-folder" value="downloads" style="flex:1; min-width:0;" />
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button class="ghost-btn"
+              style="height:30px; display:inline-flex; align-items:center; justify-content:center; padding:0 12px; font-size:11px; font-family:'Roboto Mono', monospace; font-weight:700; letter-spacing:0.5px; min-width:75px; border-radius:8px; color:var(--text-color);"
+              onclick="openDownloadBrowser('url-download-folder')">Open</button>
+            <button class="ghost-btn"
+              style="height:30px; display:inline-flex; align-items:center; justify-content:center; padding:0 12px; font-size:11px; font-family:'Roboto Mono', monospace; font-weight:700; letter-spacing:0.5px; min-width:75px; border-radius:8px; color:var(--text-muted);"
+              onclick="openFolderPicker('url-download-folder')">Browse</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="glass-btn primary" style="width:100%; margin-bottom:14px;" onclick="startDownload()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        Download
+      </button>
+
+      <div id="dl-progress" style="display:none;">
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+            <div>
+              <div style="font-size:13px; font-weight:500; color:#fff; font-family:'Inter',sans-serif;"
+                id="dl-track-title">Download</div>
+              <div style="font-size:11px; color:var(--text-muted); margin-top:3px;" id="dl-track-meta">See log below for
+                track details</div>
+            </div>
+            <span class="badge badge-blue" id="dl-status">Downloading</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="dl-bar" style="width:0%"></div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:7px;" id="dl-pct">0%</div>
+
+          <div id="dl-log-container" style="margin-top:12px; display:none;">
+            <div class="card-label blue" style="margin-bottom:8px;">LOG</div>
+            <div id="dl-log"
+              style="padding:8px; background:rgba(0,0,0,0.2); border-radius:8px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-muted); max-height:300px; overflow-y:auto; white-space:pre-wrap; border:1px solid var(--card-border);">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEARCH ══ -->
+    <div class="page" id="page-search">
+      <div class="page-eyebrow">Search</div>
+
+      <div class="glass-card">
+        <div class="card-label blue">PLATFORM</div>
+        <div class="platform-grid" id="search-platforms">
+          <div class="platform-pill selected" data-platform="all" onclick="selectSearchPlatform(this)">All</div>
+          <div class="platform-pill" data-platform="apple" onclick="selectSearchPlatform(this)">Apple Music</div>
+          <div class="platform-pill" data-platform="beatport" onclick="selectSearchPlatform(this)">Beatport</div>
+          <div class="platform-pill" data-platform="beatsource" onclick="selectSearchPlatform(this)">Beatsource</div>
+          <div class="platform-pill" data-platform="deezer" onclick="selectSearchPlatform(this)">Deezer</div>
+          <div class="platform-pill" data-platform="qobuz" onclick="selectSearchPlatform(this)">Qobuz</div>
+          <div class="platform-pill" data-platform="soundcloud" onclick="selectSearchPlatform(this)">SoundCloud</div>
+          <div class="platform-pill" data-platform="spotify" onclick="selectSearchPlatform(this)">Spotify</div>
+          <div class="platform-pill" data-platform="tidal" onclick="selectSearchPlatform(this)">TIDAL</div>
+          <div class="platform-pill" data-platform="youtube" onclick="selectSearchPlatform(this)">YouTube</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">TYPE</div>
+        <div class="type-grid" id="search-type-grid">
+          <div class="type-btn selected" onclick="selectType(this)">Track</div>
+          <div class="type-btn default-type" onclick="selectType(this)">Album</div>
+          <div class="type-btn default-type" onclick="selectType(this)">Artist</div>
+          <div class="type-btn" onclick="selectType(this)">Playlist</div>
+          <div class="type-btn beatport-only" onclick="selectType(this)" style="display:none;">Label</div>
+          <div class="type-btn youtube-only" onclick="selectType(this)" style="display:none;">Channel</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">QUALITY</div>
+        <div class="codec-row">
+          <div class="codec-chip selected" onclick="selectCodec(this)">ATMOS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIFI</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOSSLESS</div>
+          <div class="codec-chip" onclick="selectCodec(this)">HIGH</div>
+          <div class="codec-chip" onclick="selectCodec(this)">LOW</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">QUERY</div>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px;">
+          <input type="text" id="search-input" placeholder="Search for tracks, albums..." style="flex:1" />
+          <button class="glass-btn primary" onclick="doSearch()">Search</button>
+        </div>
+      </div>
+
+      <div id="results-section" style="display:none;">
+        <div class="glass-card">
+          <div class="card-label blue">RESULTS</div>
+          <div id="results-list"></div>
+        </div>
+        <button class="glass-btn primary" style="width:100%; margin-top:4px;" onclick="downloadSelected()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Download selected
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="page-eyebrow">Settings</div>
+
+      <!-- Module tabs -->
+      <div class="glass-card" style="padding:14px;">
+        <div class="platform-grid" id="settings-tabs">
+          <div class="platform-pill selected" data-platform="global" onclick="selectSettingsTab(this,'tab-global')">
+            Global</div>
+          <!-- Dynamic tabs will be inserted here -->
+        </div>
+      </div>
+
+      <!-- GLOBAL TAB -->
+      <div class="settings-tab" id="tab-global">
+
+        <div class="glass-card">
+          <div class="card-label blue">GENERAL</div>
+          <div class="setting-row">
+            <div class="setting-label">Output Path</div>
+            <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;min-width:200px;">
+              <input type="text" id="global-download_path" data-path="global.general.download_path"
+                style="flex:1; min-width:0;" />
+              <button class="ghost-icon-btn" type="button" title="Open Browser" aria-label="Open Browser"
+                style="height:30px; width:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:8px;"
+                onclick="openDownloadBrowser('global-download_path')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </button>
+              <button class="ghost-icon-btn" type="button" title="Browse" aria-label="Browse"
+                style="height:30px; width:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:8px;"
+                onclick="openFolderPicker('global-download_path')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M10 6H14" />
+                  <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z" />
+                  <path d="M8 12h8" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Quality</div>
+            <select id="global-download_quality" data-path="global.general.download_quality" style="width:180px;">
+              <option value="lossless">lossless</option>
+              <option value="hifi">hifi</option>
+              <option value="high">high</option>
+              <option value="low">low</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Search Limit</div>
+            <input type="text" id="global-search_limit" data-path="global.general.search_limit"
+              style="width:80px;text-align:center;" />
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Concurrent Downloads</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="range" id="global-concurrent_downloads" data-path="global.general.concurrent_downloads"
+                min="1" max="10" step="1" style="width:140px;"
+                oninput="this.nextElementSibling.textContent=this.value" />
+              <span style="font-size:12px;color:var(--text-muted);min-width:16px;">5</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Progress Bar</div>
+            <div class="toggle" id="global-progress_bar" data-path="global.general.progress_bar"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-label blue">ARTIST DOWNLOADING</div>
+          <div class="setting-row">
+            <div class="setting-label">Return Credited Albums</div>
+            <div class="toggle" id="global-return_credited_albums"
+              data-path="global.artist_downloading.return_credited_albums" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Separate Tracks Skip Downloaded</div>
+            <div class="toggle" id="global-separate_tracks_skip_downloaded"
+              data-path="global.artist_downloading.separate_tracks_skip_downloaded"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-label blue">FORMATTING</div>
+          <div class="setting-row">
+            <div class="setting-label">Album Format</div>
+            <input type="text" id="global-album_format" data-path="global.formatting.album_format"
+              style="width:200px;" />
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Playlist Format</div>
+            <input type="text" id="global-playlist_format" data-path="global.formatting.playlist_format"
+              style="width:200px;" />
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Track Filename Format</div>
+            <input type="text" id="global-track_filename_format" data-path="global.formatting.track_filename_format"
+              style="width:200px;" />
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Single Full Path Format</div>
+            <input type="text" id="global-single_full_path_format" data-path="global.formatting.single_full_path_format"
+              style="width:200px;" />
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Enable Zfill</div>
+            <div class="toggle" id="global-enable_zfill" data-path="global.formatting.enable_zfill"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Force Album Format</div>
+            <div class="toggle" id="global-force_album_format" data-path="global.formatting.force_album_format"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-label blue">ADVANCED</div>
+          <div class="setting-row">
+            <div class="setting-label">Ignore Existing Files</div>
+            <div class="toggle" id="global-ignore_existing_files" data-path="global.advanced.ignore_existing_files"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Ignore Different Artists</div>
+            <div class="toggle" id="global-ignore_different_artists"
+              data-path="global.advanced.ignore_different_artists" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label">Debug Mode</div>
+            <div class="toggle" id="global-debug_mode" data-path="global.advanced.debug_mode"
+              onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+      </div><!-- end tab-global -->
+
+      <!-- Dynamic Module Content Containers -->
+      <div id="module-tabs-containers"></div>
+
+      <button id="settings-save-btn" class="glass-btn primary" style="width:100%; margin-top:8px;">Save</button>
+    </div>
+
+    <!-- ══ ABOUT ══ -->
+    <div class="page" id="page-about">
+      <div class="page-eyebrow" style="margin-bottom: 6px;">About</div>
+      <div class="about-logo"><span class="white">Orpheus</span><span class="blue">DL</span></div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:36px; font-family:'Roboto Mono',monospace;">Web
+        UI for Termux &amp; Linux &nbsp;·&nbsp; v1.0.0</div>
+
+      <div class="glass-card">
+        <div class="card-label blue">SUPPORTED PLATFORMS</div>
+        <table class="platform-table">
+          <tr>
+            <td>Apple Music</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-applemusic" target="_blank">GitHub ↗</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Beatport</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-beatport" target="_blank">GitHub ↗</a></td>
+          </tr>
+          <tr>
+            <td>Beatsource</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-beatsource" target="_blank">GitHub ↗</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Deezer</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-deezer" target="_blank">GitHub ↗</a></td>
+          </tr>
+          <tr>
+            <td>Qobuz</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-qobuz" target="_blank">GitHub ↗</a></td>
+          </tr>
+          <tr>
+            <td>SoundCloud</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-soundcloud" target="_blank">GitHub ↗</a>
+            </td>
+          </tr>
+          <tr>
+            <td>Spotify</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-spotify" target="_blank">GitHub ↗</a></td>
+          </tr>
+          <tr>
+            <td>TIDAL</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-tidal" target="_blank">GitHub ↗</a></td>
+          </tr>
+          <tr>
+            <td>YouTube</td>
+            <td><a class="link" href="https://github.com/bascurtiz/orpheusdl-youtube" target="_blank">GitHub ↗</a></td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-label blue">PROJECT LINKS</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">OrpheusDL CLI</div>
+            <div class="setting-desc">Core download engine</div>
+          </div>
+          <a class="link" href="https://github.com/bascurtiz/OrpheusDL" target="_blank">GitHub ↗</a>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">OrpheusDL GUI</div>
+            <div class="setting-desc">Desktop app for Win / macOS / Linux</div>
+          </div>
+          <a class="link" href="https://github.com/bascurtiz/OrpheusDL-GUI" target="_blank">GitHub ↗</a>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Website</div>
+            <div class="setting-desc">orpheusdl-gui.x10.mx</div>
+          </div>
+          <a class="link" href="https://orpheusdl-gui.x10.mx" target="_blank">Visit ↗</a>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Report an issue</div>
+          </div>
+          <a class="link" href="https://github.com/bascurtiz/OrpheusDL/issues" target="_blank">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="glass-card" style="text-align:center; padding:20px;">
+        <div style="font-size:12px; color:var(--text-muted); font-family:'Roboto Mono',monospace; line-height:1.9;">
+          Built on top of <span style="color:var(--text-color); font-weight:500;">OrpheusDL</span> by bascurtiz<br>
+          Runs locally via Flask &nbsp;·&nbsp;
+          <code
+            style="color:var(--accent-1); background:rgba(74,158,255,0.08); padding:2px 7px; border-radius:5px; font-size:11px;">localhost:5000</code>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end page-wrap -->
+
+  <script>
+    function switchPage(id, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('page-' + id).classList.add('active');
+      btn.classList.add('active');
+
+      if (id === 'settings') {
+        initSettings().then(() => {
+          const globalPill = document.querySelector('#settings-tabs .platform-pill');
+          if (globalPill && !window._activeSettingsTabId || window._activeSettingsTabId === 'tab-global') {
+            selectSettingsTab(globalPill, 'tab-global');
+          }
+        });
+      }
+    }
+
+    // --- PLATFORM BRANDING ---
+    const platformBranding = {
+      'tidal': { name: 'TIDAL', color: '#33ffe7' },
+      'apple': { name: 'Apple Music', color: '#FA586A' },
+      'applemusic': { name: 'Apple Music', color: '#FA586A' },
+      'beatport': { name: 'Beatport', color: '#00ff89' },
+      'beatsource': { name: 'Beatsource', color: '#16a8f4' },
+      'deezer': { name: 'Deezer', color: '#a238ff' },
+      'qobuz': { name: 'Qobuz', color: '#0070ef' },
+      'soundcloud': { name: 'SoundCloud', color: '#ff5502' },
+      'spotify': { name: 'Spotify', color: '#1cc659' },
+      'youtube': { name: 'YouTube', color: '#FF0000' }
+    };
+
+    function getPlatformBranding(raw) {
+      if (!raw) return { name: 'Download', color: 'inherit' };
+      const lower = raw.toLowerCase();
+
+      // 1. Try URL-based matching (hostname only to avoid artist name collisions)
+      if (lower.startsWith('http')) {
+        try {
+          const host = new URL(raw).hostname.toLowerCase();
+          if (host.includes('tidal')) return platformBranding['tidal'];
+          if (host.includes('apple.com')) return platformBranding['apple'];
+          if (host.includes('beatport')) return platformBranding['beatport'];
+          if (host.includes('beatsource')) return platformBranding['beatsource'];
+          if (host.includes('deezer')) return platformBranding['deezer'];
+          if (host.includes('qobuz')) return platformBranding['qobuz'];
+          if (host.includes('soundcloud')) return platformBranding['soundcloud'];
+          if (host.includes('spotify')) return platformBranding['spotify'];
+          if (host.includes('youtube') || host.includes('youtu.be')) return platformBranding['youtube'];
+        } catch (e) { }
+      }
+
+      // 2. Try exact keyword matching (for search platform names)
+      if (platformBranding[lower]) return platformBranding[lower];
+
+      // Fallback
+      return { name: raw.split('.')[0].toUpperCase() || raw, color: 'inherit' };
+    }
+
+    function selectPlatform(el) {
+      el.closest('.platform-grid').querySelectorAll('.platform-pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function selectSearchPlatform(el) {
+      el.closest('.platform-grid').querySelectorAll('.platform-pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+      const platform = el.textContent.trim();
+      const isBeat = platform === 'Beatport' || platform === 'Beatsource';
+      const isYT = platform === 'YouTube';
+
+      // show/hide type buttons
+      document.querySelectorAll('.default-type').forEach(b => {
+        b.style.display = isYT ? 'none' : '';
+      });
+      document.querySelectorAll('.beatport-only').forEach(b => {
+        b.style.display = isBeat ? '' : 'none';
+      });
+      document.querySelectorAll('.youtube-only').forEach(b => {
+        b.style.display = isYT ? '' : 'none';
+      });
+
+      // reset type selection to Track
+      document.querySelectorAll('#search-type-grid .type-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('#search-type-grid .type-btn').classList.add('selected');
+
+      const mapPlatformToPolicy = {
+        'Beatport': 'beat',
+        'Beatsource': 'beat',
+        'Deezer': 'deezer',
+        'Qobuz': 'qobuz',
+        'SoundCloud': 'soundcloud',
+        'Apple Music': 'applemusic',
+        'Spotify': 'spotify',
+        'TIDAL': 'tidal',
+        'YouTube': 'youtube'
+      };
+      const policy = mapPlatformToPolicy[platform] || 'default';
+      applyCodecPolicy(policy, '#page-search');
+    }
+
+    function selectType(el) {
+      el.closest('.type-grid').querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function selectCodec(el) {
+      el.closest('.codec-row').querySelectorAll('.codec-chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // ── CODEC POLICY (based on URL input) ──
+    const codecChipDefaults = [
+      { label: 'ATMOS', quality: 'atmos' },
+      { label: 'HIFI', quality: 'hifi' },
+      { label: 'LOSSLESS', quality: 'lossless' },
+      { label: 'HIGH', quality: 'high' },
+      { label: 'LOW', quality: 'low' }
+    ];
+
+    function detectUrlPolicy(url) {
+      let u;
+      try {
+        const raw = String(url || '').trim();
+        if (!raw) return 'default';
+        u = new URL(raw.startsWith('http') ? raw : ('https://' + raw));
+      } catch (_) {
+        return 'default';
+      }
+
+      const host = u.hostname.toLowerCase();
+      if (host.includes('beatport.com') || host.includes('beatsource.com')) return 'beat';
+      if (host.includes('deezer.com')) return 'deezer';
+      if (host.includes('qobuz.com')) return 'qobuz';
+      if (host.includes('soundcloud.com')) return 'soundcloud';
+      if (host.includes('music.apple.com')) return 'applemusic';
+      if (host.includes('spotify.com') || host.includes('open.spotify.com')) return 'spotify';
+      if (host.includes('tidal.com') || host.includes('listen.tidal.com')) return 'tidal';
+      if (host.includes('youtube.com') || host.includes('youtu.be')) return 'youtube';
+      return 'default';
+    }
+
+    function applyCodecPolicy(policy, containerSelector = '.page.active') {
+      const container = document.querySelector(containerSelector);
+      if (!container) return;
+
+      const chips = Array.from(container.querySelectorAll('.codec-row .codec-chip'));
+      if (!chips.length) return;
+
+      const selectedIdx = chips.findIndex(c => c.classList.contains('selected'));
+
+      chips.forEach((chip, idx) => {
+        const def = codecChipDefaults[idx];
+        if (!def) return;
+        chip.style.display = '';
+        chip.dataset.quality = def.quality;
+        chip.textContent = def.label;
+      });
+
+      const visible = new Set();
+      let defaultSelected = 2; // LOSSLESS
+
+      if (policy === 'beat' || policy === 'deezer') {
+        visible.add(2); visible.add(3); visible.add(4);
+        defaultSelected = 2;
+      } else if (policy === 'qobuz') {
+        visible.add(1); visible.add(2); visible.add(3);
+        defaultSelected = 1;
+      } else if (policy === 'soundcloud' || policy === 'applemusic') {
+        visible.add(3);
+        defaultSelected = 3;
+      } else if (policy === 'spotify') {
+        visible.add(3); visible.add(4);
+        defaultSelected = 3;
+        if (chips[3]) { chips[3].textContent = 'HIGH'; chips[3].dataset.quality = 'lossless'; }
+        if (chips[4]) { chips[4].textContent = 'LOW'; chips[4].dataset.quality = 'low'; }
+      } else if (policy === 'tidal') {
+        // Show all
+        visible.add(0); visible.add(1); visible.add(2); visible.add(3); visible.add(4);
+      } else if (policy === 'youtube') {
+        visible.add(2); visible.add(3); visible.add(4);
+        defaultSelected = 2;
+        if (chips[2]) { chips[2].textContent = 'OPUS (lossless)'; chips[2].dataset.quality = 'lossless'; }
+        if (chips[3]) { chips[3].textContent = 'AAC (high)'; chips[3].dataset.quality = 'high'; }
+        if (chips[4]) { chips[4].textContent = 'MP3 (low)'; chips[4].dataset.quality = 'low'; }
+      } else {
+        visible.add(0); visible.add(1); visible.add(2); visible.add(3); visible.add(4);
+      }
+
+      chips.forEach((chip, idx) => {
+        chip.style.display = visible.has(idx) ? '' : 'none';
+      });
+
+      if (!visible.has(selectedIdx)) {
+        chips.forEach(c => c.classList.remove('selected'));
+        if (chips[defaultSelected]) chips[defaultSelected].classList.add('selected');
+      }
+    }
+
+    let codecDetectTimer = null;
+    const urlInput = document.getElementById('url-input');
+    if (urlInput) {
+      urlInput.addEventListener('input', () => {
+        clearTimeout(codecDetectTimer);
+        codecDetectTimer = setTimeout(() => {
+          const raw = urlInput.value || '';
+          const policy = detectUrlPolicy(raw.trim());
+          applyCodecPolicy(policy, '#page-url');
+        }, 250);
+      });
+    }
+
+    // ── DOWNLOAD BY URL ──
+    async function startDownload() {
+      const url = document.getElementById('url-input').value.trim();
+      if (!url) { alert('Please enter a URL'); return; }
+
+      const activePage = document.querySelector('.page.active');
+      const selectedChip = activePage ? activePage.querySelector('.codec-chip.selected') : document.querySelector('.codec-chip.selected');
+      const quality = selectedChip?.dataset?.quality ? selectedChip.dataset.quality : (selectedChip?.textContent.trim() || '');
+
+      const prog = document.getElementById('dl-progress');
+      prog.style.display = 'block';
+      let hostLabel = 'URL download';
+      try { hostLabel = new URL(url).hostname.replace(/^www\./, ''); } catch (_) { }
+      const tTitle = document.getElementById('dl-track-title');
+      const tMeta = document.getElementById('dl-track-meta');
+      const branding = getPlatformBranding(url);
+      if (tTitle) {
+        tTitle.textContent = branding.name;
+        tTitle.style.color = branding.color;
+      }
+      if (tMeta) tMeta.textContent = quality ? `${quality} · pasted URL` : 'Pasted URL';
+      const bar = document.getElementById('dl-bar');
+      const lbl = document.getElementById('dl-pct');
+      const status = document.getElementById('dl-status');
+      bar.style.width = '0%'; lbl.textContent = '0%';
+      status.textContent = 'Starting…'; status.className = 'badge badge-white';
+
+      try {
+        const res = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, quality })
+        });
+        const { job_id, error } = await res.json();
+        if (error) { status.textContent = 'Error'; status.className = 'badge badge-red'; lbl.textContent = error; return; }
+        pollJob(job_id, bar, lbl, status);
+      } catch (e) {
+        status.textContent = 'Error'; status.className = 'badge badge-red';
+        lbl.textContent = 'Could not reach backend. Is webui.py running?';
+      }
+    }
+
+    // ── POLL JOB ──
+    function pollJob(job_id, bar, lbl, status) {
+      const logContainer = document.getElementById('dl-log-container');
+      const logEl = document.getElementById('dl-log');
+      if (logContainer) logContainer.style.display = 'block';
+      if (logEl) logEl.textContent = '';
+
+      const iv = setInterval(async () => {
+        try {
+          const res = await fetch('/api/job/' + job_id);
+          const job = await res.json();
+          bar.style.width = job.progress + '%';
+          lbl.textContent = job.progress + '%';
+
+          if (logEl && job.log) {
+            logEl.textContent = job.log.join('\n');
+            logEl.scrollTop = logEl.scrollHeight;
+          }
+
+          const lastLine = job.log.slice(-1)[0] || '';
+          if (job.status === 'done') {
+            clearInterval(iv);
+            bar.style.width = '100%'; lbl.textContent = '100%';
+            status.textContent = 'Done ✓'; status.className = 'badge badge-green';
+          } else if (job.status === 'error') {
+            clearInterval(iv);
+            status.textContent = 'Error'; status.className = 'badge badge-red';
+            lbl.textContent = lastLine;
+          } else {
+            status.textContent = 'Downloading'; status.className = 'badge badge-white';
+          }
+        } catch (e) { clearInterval(iv); }
+      }, 800);
+    }
+
+    // ── SEARCH ──
+    let currentSearchJobId = null;
+    async function doSearch() {
+      const q = document.getElementById('search-input').value.trim();
+      if (!q) return;
+      const platformPill = document.querySelector('#search-platforms .platform-pill.selected');
+      const platform = platformPill ? platformPill.textContent.trim().toLowerCase().replace(/\s+/g, '') : 'soundcloud';
+      const type = document.querySelector('#search-type-grid .type-btn.selected')?.textContent.trim().toLowerCase() || 'track';
+      const list = document.getElementById('results-list');
+      list.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:12px;">Searching…</div>';
+      document.getElementById('results-section').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ platform, type, query: q })
+        });
+        const { job_id, error } = await res.json();
+        if (error) { list.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">' + error + '</div>'; return; }
+        currentSearchJobId = job_id;
+        pollSearchJob(job_id, list);
+      } catch (e) {
+        list.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">Backend not reachable. Is webui.py running?</div>';
+      }
+    }
+
+    function pollSearchJob(job_id, list) {
+      const iv = setInterval(async () => {
+        try {
+          const res = await fetch('/api/job/' + job_id);
+          const job = await res.json();
+          renderSearchResults(job.log, list, job.status);
+          if (job.status === 'done' || job.status === 'error') {
+            clearInterval(iv);
+          }
+        } catch (e) { clearInterval(iv); }
+      }, 800);
+    }
+
+    function renderSearchResults(log, list, status) {
+      const results = [];
+      for (const line of log) {
+        const m = line.match(/^(\d+)\.\s+(.+)/);
+        if (m) {
+          let text = m[2];
+          let artist = '';
+          const artistMatch = text.match(/\|ARTIST\|([^|]+)\|/);
+          if (artistMatch) {
+            artist = artistMatch[1];
+            text = text.replace(artistMatch[0], '').trim();
+          }
+          let imageUrl = '';
+          const imgMatch = text.match(/\|IMAGE\|([^|]+)\|/);
+          if (imgMatch) {
+            imageUrl = imgMatch[1];
+            text = text.split(imgMatch[0]).join('').trim();
+          }
+          let resultId = '';
+          const idMatch = text.match(/\|ID\|([^|]+)\|/);
+          if (idMatch) {
+            resultId = idMatch[1];
+            text = text.split(idMatch[0]).join('').trim();
+          }
+          let platform = '';
+          const platformMatch = text.match(/\|PLATFORM\|([^|]+)\|/);
+          if (platformMatch) {
+            platform = platformMatch[1];
+            text = text.replace(platformMatch[0], '').trim();
+          }
+
+          const chips = [];
+          const bracketMatches = text.match(/\[([^\]]+)\]/g);
+          if (bracketMatches) {
+            bracketMatches.forEach(bm => {
+              chips.push(bm.slice(1, -1));
+              text = text.replace(bm, '').trim();
+            });
+          }
+          // Remove stray trailing dashes (common after artist - track removal)
+          text = text.replace(/\s+-\s*$/, '').trim();
+          results.push({
+            num: m[1],
+            title: text,
+            artist: artist,
+            chips: chips,
+            imageUrl: imageUrl,
+            platform: platform
+          });
+        }
+      }
+      if (!results.length) {
+        let msg = 'No results found.';
+        let icon = '';
+        if (status === 'error') msg = 'Search failed. See log below:';
+        if (status === 'running' || status === 'pending') {
+          msg = 'Search in progress... Please wait.';
+          icon = '<div class="spinner" style="margin-right:10px;"></div>';
+        }
+
+        let html = `<div style="padding:12px;color:var(--text-muted);font-size:12px;display:flex;align-items:center;">${icon}${msg}</div>`;
+        if (status !== 'running' && status !== 'pending') {
+          html += `
+          <div class="card-label blue" style="margin: 0 12px 8px;">LOG</div>
+          <div style="margin:0 12px 12px; padding:8px; background:rgba(0,0,0,0.2); border-radius:8px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--text-muted); max-height:160px; overflow-y:auto; white-space:pre-wrap; border:1px solid var(--card-border);">${log.join('\n')}</div>
+          `;
+        }
+        list.innerHTML = html;
+        return;
+      }
+
+      const platformMap = {
+        'applemusic': 'AppleMusic.png',
+        'beatport': 'Beatport.png',
+        'beatsource': 'Beatsource.png',
+        'deezer': 'Deezer.png',
+        'qobuz': 'Qobuz.png',
+        'soundcloud': 'SoundCloud.png',
+        'spotify': 'Spotify.png',
+        'tidal': 'TIDAL.png',
+        'youtube': 'YouTube.png'
+      };
+
+      list.innerHTML = results.map(r => {
+        const platformIcon = r.platform ? platformMap[r.platform.toLowerCase()] : null;
+        const branding = getPlatformBranding(r.platform || 'Search');
+        const platformChip = r.platform ? `<span class="result-chip platform-chip" data-platform="${r.platform.toLowerCase()}">${branding.name}</span>` : '';
+
+        return `
+      <div class="result-item" onclick="selectResult(this)" data-index="${r.num}" data-platform="${r.platform || ''}">
+        <div class="result-num">${r.num}</div>
+        <div class="result-cover-container">
+          ${r.imageUrl ? `<img src="${r.imageUrl}" class="result-cover" loading="lazy">` : `<div class="result-cover-placeholder">?</div>`}
+          ${platformIcon ? `<div class="platform-icon-overlay"><img src="/platforms/${platformIcon}"></div>` : ''}
+        </div>
+        <div class="result-info">
+          <div class="result-header">
+            <div class="result-title">${r.title}</div>
+            <div class="result-artist">${r.artist}</div>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+            ${platformChip}
+            ${r.chips.map(c => `<span class="result-chip">${c}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    `}).join('');
+    }
+
+    function selectResult(el) {
+      el.closest('#results-list').querySelectorAll('.result-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    async function downloadSelected() {
+      const selected = document.querySelector('#results-list .result-item.selected');
+      if (!selected) { alert('Select a result first'); return; }
+      const index = selected.dataset.index;
+      const activePage = document.querySelector('.page.active');
+      const selectedChip = activePage ? activePage.querySelector('.codec-chip.selected') : document.querySelector('.codec-chip.selected');
+      const quality = selectedChip?.dataset?.quality ? selectedChip.dataset.quality : (selectedChip?.textContent.trim() || '');
+
+      try {
+        const res = await fetch('/api/search/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ search_job_id: currentSearchJobId, index: parseInt(index), quality })
+        });
+        const { job_id, error } = await res.json();
+        if (error) { alert('Error: ' + error); return; }
+
+        // Show progress visually by switching back to URL tab
+        switchPage('url', document.querySelector('.nav-tab'));
+        document.getElementById('dl-progress').style.display = 'block';
+        window._activeDownloadJob = job_id;
+
+        const branding = getPlatformBranding(selected.dataset.platform || 'Search');
+        if (tTitle) {
+          tTitle.textContent = branding.name;
+          tTitle.style.color = branding.color;
+        }
+
+        pollJob(job_id, bar, lbl, status);
+      } catch (e) {
+        console.error(e);
+        alert('Backend not reachable.');
+      }
+    }
+
+    document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+    // ── SETTINGS LOGIC ──
+    let settingsCache = null;
+
+    const customModuleConfigs = {
+      'musixmatch': { hide: true },
+      'youtube': {
+        fields: {
+          'download_mode': { type: 'radio', options: ['sequential', 'concurrent'] }
+        },
+        order: ['cookies_path', 'download_pause_seconds', 'download_mode']
+      },
+      'spotify': {
+        order: ['username', 'download_pause_seconds', 'client_id', 'client_secret']
+      },
+      'deezer': {
+        fields: {
+          'use_arl': { type: 'checkbox' }
+        },
+        order: ['client_id', 'client_secret', 'bf_secret', 'email', 'password', 'arl', 'use_arl']
+      },
+      'qobuz': {
+        fields: {
+          'use_id_token': { type: 'checkbox' }
+        },
+        order: ['app_id', 'app_secret', 'quality_format', 'username', 'password', 'user_id', 'auth_token', 'use_id_token']
+      },
+      'tidal': {
+        fields: {
+          'guest_token': { hide: true },
+          'guest_secret': { hide: true }
+        },
+        order: [
+          'mobile_atmos_hires_token', 'mobile_hires_token',
+          'tv_atmos_secret', 'tv_atmos_token',
+          'enable_mobile', 'prefer_ac4', 'fix_mqa'
+        ]
+      },
+      'beatport': {
+        order: ['username', 'password']
+      },
+      'beatsource': {
+        order: ['username', 'password']
+      }
+    };
+
+    async function initSettings() {
+      try {
+        if (window.location.protocol === 'file:') {
+          alert('Warning: WebUI fetched via file:// protocol. Fetching settings will fail. Please use http://localhost:5000');
+        }
+        const data = await fetchSettings();
+        settingsCache = data;
+        renderSettingsTabs(data);
+        loadGlobalSettings(data);
+        if (!window._activeSettingsTabId) {
+          window._activeSettingsTabId = 'tab-global';
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error loading settings: ' + e.message);
+      }
+    }
+
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to fetch settings');
+        }
+        return await res.json();
+      } catch (e) {
+        throw new Error('Failed to fetch settings. Is webui.py running? ' + e.message);
+      }
+    }
+
+    function renderSettingsTabs(data) {
+      const tabsContainer = document.getElementById('settings-tabs');
+      const containersContainer = document.getElementById('module-tabs-containers');
+      const pills = tabsContainer.querySelectorAll('.platform-pill');
+      pills.forEach(p => { if (p.textContent.trim() !== 'Global') p.remove(); });
+      containersContainer.innerHTML = '';
+      if (!data.modules) return;
+
+      Object.keys(data.modules).sort().forEach(moduleKey => {
+        if (customModuleConfigs[moduleKey]?.hide) return;
+
+        const label = humanizeSettingsKey(moduleKey);
+        const tabId = 'tab-' + moduleKey;
+        const pill = document.createElement('div');
+        pill.className = 'platform-pill';
+        pill.dataset.platform = moduleKey.toLowerCase();
+        pill.textContent = label;
+        pill.onclick = () => selectSettingsTab(pill, tabId);
+        tabsContainer.appendChild(pill);
+        const container = document.createElement('div');
+        container.className = 'settings-tab';
+        container.id = tabId;
+        container.style.display = 'none';
+        container.innerHTML = `
+        <div class="glass-card">
+          <div id="module-settings-${moduleKey}" class="module-settings" style="margin-top:8px;"></div>
+        </div>
+        `;
+        containersContainer.appendChild(container);
+      });
+    }
+
+    function selectSettingsTab(pill, tabId) {
+      document.querySelectorAll('#settings-tabs .platform-pill').forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      document.querySelectorAll('.settings-tab').forEach(t => t.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+      window._activeSettingsTabId = tabId;
+      if (tabId.startsWith('tab-') && tabId !== 'tab-global') {
+        const moduleKey = tabId.replace('tab-', '');
+        renderModuleSettings(moduleKey);
+      }
+    }
+
+    function humanizeSettingsKey(k) {
+      if (k === 'arl') return 'ARL';
+      if (k === 'bf_secret') return 'Bf Secret';
+      if (k === 'tidal') return 'TIDAL';
+      if (k === 'applemusic') return 'Apple Music';
+      return String(k || '')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (m) => m.toUpperCase());
+    }
+
+    function loadGlobalSettings(data) {
+      if (!data.global) return;
+      document.querySelectorAll('[data-path^="global."]').forEach(el => {
+        const path = el.dataset.path.split('.');
+        let val = data;
+        for (const segment of path) { val = val ? val[segment] : undefined; }
+        if (el.classList.contains('toggle')) {
+          el.classList.toggle('on', !!val);
+        } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+          el.value = (val === undefined || val === null) ? '' : val;
+          if (el.type === 'range') { el.nextElementSibling.textContent = el.value; }
+        }
+      });
+    }
+
+    function renderModuleSettings(moduleKey) {
+      const container = document.getElementById('module-settings-' + moduleKey);
+      if (!container || !settingsCache.modules || !settingsCache.modules[moduleKey]) return;
+      container.innerHTML = '';
+      const moduleData = settingsCache.modules[moduleKey];
+
+      const header = document.createElement('div');
+      header.className = 'card-label blue';
+      header.textContent = (humanizeSettingsKey(moduleKey) + ' Settings').toUpperCase();
+      container.appendChild(header);
+
+      const config = customModuleConfigs[moduleKey] || {};
+      let keys = Object.keys(moduleData);
+      if (config.order) {
+        keys = config.order.filter(k => moduleData.hasOwnProperty(k));
+        // Add any missing keys at the end
+        Object.keys(moduleData).forEach(k => {
+          if (!keys.includes(k)) keys.push(k);
+        });
+      } else {
+        keys.sort();
+      }
+
+      keys.forEach(key => {
+        const value = moduleData[key];
+        const fieldConfig = config.fields?.[key] || {};
+        if (fieldConfig.hide) return;
+
+        const row = document.createElement('div');
+        row.className = 'setting-row';
+        row.innerHTML = `<div class="setting-label">${humanizeSettingsKey(key)}</div>`;
+        const right = document.createElement('div');
+        right.style = 'display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end;';
+
+        if (fieldConfig.type === 'radio') {
+          const group = document.createElement('div');
+          group.className = 'type-grid';
+          group.style = 'display:flex; gap:8px;';
+          group.dataset.key = key;
+          group.dataset.type = 'radio';
+          fieldConfig.options.forEach(opt => {
+            const btn = document.createElement('div');
+            btn.className = 'type-btn' + (String(value) === opt ? ' selected' : '');
+            btn.style.padding = '6px 12px';
+            btn.style.fontSize = '11px';
+            btn.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+            btn.onclick = () => {
+              group.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+              btn.classList.add('selected');
+            };
+            btn.dataset.value = opt;
+            group.appendChild(btn);
+          });
+          right.appendChild(group);
+        } else if (fieldConfig.type === 'checkbox' || typeof value === 'boolean' || value === "True" || value === "False") {
+          const isTrue = (value === true || String(value).toLowerCase() === 'true');
+          const t = document.createElement('div');
+          t.className = 'toggle' + (isTrue ? ' on' : '');
+          t.dataset.key = key;
+          t.dataset.type = (fieldConfig.type === 'checkbox') ? 'checkbox' : 'boolean';
+          t.onclick = () => t.classList.toggle('on');
+          right.appendChild(t);
+        } else if (typeof value === 'number') {
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.value = value;
+          inp.dataset.key = key;
+          inp.dataset.type = 'number';
+          inp.style.width = '80px';
+          inp.style.textAlign = 'center';
+          right.appendChild(inp);
+        } else if (Array.isArray(value)) {
+          const ta = document.createElement('textarea');
+          ta.value = JSON.stringify(value, null, 2);
+          ta.dataset.key = key;
+          ta.dataset.type = 'json';
+          ta.style.flex = '1';
+          ta.style.minWidth = '0';
+          ta.style.height = '80px';
+          right.appendChild(ta);
+        } else {
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.value = value === null ? '' : String(value);
+          inp.dataset.key = key;
+          inp.dataset.type = 'string';
+          inp.style.flex = '1';
+          inp.style.minWidth = '0';
+          right.appendChild(inp);
+        }
+        row.appendChild(right);
+        container.appendChild(row);
+      });
+    }
+
+    async function saveAllSettings() {
+      if (!settingsCache) return;
+      const updated = JSON.parse(JSON.stringify(settingsCache));
+      document.querySelectorAll('[data-path^="global."]').forEach(el => {
+        const path = el.dataset.path.split('.');
+        const key = path.pop();
+        let parent = updated;
+        for (const segment of path) {
+          if (!parent[segment]) parent[segment] = {};
+          parent = parent[segment];
+        }
+        if (el.classList.contains('toggle')) {
+          parent[key] = el.classList.contains('on');
+        } else {
+          let val = el.value;
+          if (el.type === 'number' || (el.id === 'global-search_limit')) val = parseInt(val) || 0;
+          if (el.type === 'range') val = parseInt(val) || 0;
+          parent[key] = val;
+        }
+      });
+
+      const activeTabId = window._activeSettingsTabId;
+      if (activeTabId && activeTabId !== 'tab-global') {
+        const moduleKey = activeTabId.replace('tab-', '');
+        const container = document.getElementById('module-settings-' + moduleKey);
+        if (container) {
+          container.querySelectorAll('[data-key]').forEach(el => {
+            const key = el.dataset.key;
+            const type = el.dataset.type;
+
+            if (type === 'radio') {
+              const selected = el.querySelector('.type-btn.selected');
+              updated.modules[moduleKey][key] = selected ? selected.dataset.value : '';
+            } else if (type === 'checkbox') {
+              updated.modules[moduleKey][key] = el.classList.contains('on') ? "True" : "False";
+            } else if (type === 'boolean') {
+              updated.modules[moduleKey][key] = el.classList.contains('on');
+            } else if (type === 'number') {
+              updated.modules[moduleKey][key] = Number(el.value);
+            } else if (type === 'json') {
+              try { updated.modules[moduleKey][key] = JSON.parse(el.value); } catch (e) { }
+            } else {
+              updated.modules[moduleKey][key] = el.value;
+            }
+          });
+        }
+      }
+
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+        if (!res.ok) throw new Error('Save failed');
+        settingsCache = updated;
+        // Success feedback
+        const btn = document.getElementById('settings-save-btn');
+        btn.classList.add('success');
+        const oldText = btn.innerText;
+        btn.innerHTML = 'Saved <span style="font-size: 1.2em;">✓</span>';
+        setTimeout(() => {
+          btn.classList.remove('success');
+          btn.innerText = oldText;
+        }, 2000);
+      } catch (e) { alert('Error saving: ' + e.message); }
+    }
+
+    document.getElementById('settings-save-btn').onclick = saveAllSettings;
+
+    // ── FOLDER PICKER ──
+    let currentPickerTarget = null;
+    let pickerCurrentPath = ".";
+
+    function openFolderPicker(targetId) {
+      currentPickerTarget = targetId;
+      const initialPath = document.getElementById(targetId).value || ".";
+      pickerCurrentPath = initialPath;
+
+      // Create modal if not exists
+      let modal = document.getElementById('picker-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'picker-modal';
+        modal.style = `
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      `;
+        modal.innerHTML = `
+        <div class="glass-card" style="width: 100%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="card-label" style="display:flex; justify-content:space-between; align-items:center;">
+              Browse Folders
+              <button class="ghost-icon-btn" onclick="closeFolderPicker()" style="width:24px; height:24px;">✕</button>
+            </div>
+            <div id="picker-path" style="font-size:11px; color:var(--accent-1); margin-bottom:12px; word-break:break-all; font-family:'Roboto Mono',monospace;"></div>
+            <div id="picker-list" style="flex:1; overflow-y:auto; margin-bottom:14px; min-height:200px;"></div>
+            <div style="display:flex; gap:10px;">
+              <button class="glass-btn primary" style="flex:1" onclick="selectCurrentFolder()">Select</button>
+              <button class="glass-btn" style="flex:1" onclick="closeFolderPicker()">Cancel</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.style.display = 'flex';
+      loadFolder(initialPath);
+    }
+
+    function closeFolderPicker() {
+      document.getElementById('picker-modal').style.display = 'none';
+    }
+
+    async function loadFolder(path) {
+      const list = document.getElementById('picker-list');
+      const pathEl = document.getElementById('picker-path');
+      list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">Loading…</div>';
+      pathEl.textContent = path;
+
+      try {
+        const res = await fetch('/api/browse?path=' + encodeURIComponent(path));
+        const data = await res.json();
+        if (data.error) {
+          list.innerHTML = `<div style="padding:20px; color:#f87171;">${data.error}</div>`;
+          return;
+        }
+        pickerCurrentPath = data.current_path;
+        pathEl.textContent = pickerCurrentPath;
+
+        list.innerHTML = data.items.map(item => `
+        <div class="result-item" onclick="loadFolder('${item.path.replace(/\\/g, '/')}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; color:var(--accent-1);">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <div class="result-title">${item.name}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = '<div style="padding:20px; color:#f87171;">Failed to load folder</div>';
+      }
+    }
+
+    function selectCurrentFolder() {
+      if (currentPickerTarget) {
+        const input = document.getElementById(currentPickerTarget);
+        input.value = pickerCurrentPath;
+        // Trigger input event for settings logic
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      closeFolderPicker();
+    }
+
+    // ── DOWNLOAD BROWSER ──
+    let browserCurrentPath = ".";
+
+    function openDownloadBrowser(targetId) {
+      const initialPath = document.getElementById(targetId).value || ".";
+      browserCurrentPath = initialPath;
+
+      let modal = document.getElementById('browser-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'browser-modal';
+        modal.className = 'modal-backdrop'; // Use a class if we had one, but inline for now
+        modal.style = `
+          position: fixed; inset: 0; z-index: 1000;
+          background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+        `;
+        modal.innerHTML = `
+          <div class="glass-card" style="width: 100%; max-width: 600px; height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="card-label blue" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span>DOWNLOAD BROWSER</span>
+              <button class="ghost-icon-btn" onclick="closeDownloadBrowser()" style="width:24px; height:24px;">✕</button>
+            </div>
+            <div id="browser-path" style="font-size:11px; color:var(--accent-1); margin-bottom:12px; word-break:break-all; font-family:'Roboto Mono',monospace; background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:6px;"></div>
+            <div id="browser-list" style="flex:1; overflow-y:auto; margin-bottom:14px; padding-right:4px;"></div>
+            <div style="display:flex; gap:10px;">
+              <button class="glass-btn primary" style="flex:1" onclick="closeDownloadBrowser()">Close</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+      modal.style.display = 'flex';
+      loadBrowserContents(initialPath);
+    }
+
+    function closeDownloadBrowser() {
+      document.getElementById('browser-modal').style.display = 'none';
+    }
+
+    async function loadBrowserContents(path) {
+      const list = document.getElementById('browser-list');
+      const pathEl = document.getElementById('browser-path');
+      list.innerHTML = '<div style="padding:40px; text-align:center; color:var(--text-muted);"><div class="spinner" style="margin-bottom:10px;"></div><br>Loading files…</div>';
+      pathEl.textContent = path;
+
+      try {
+        const res = await fetch('/api/browse?path=' + encodeURIComponent(path));
+        const data = await res.json();
+        if (data.error) {
+          list.innerHTML = `<div style="padding:20px; color:#f87171;">${data.error}</div>`;
+          return;
+        }
+        browserCurrentPath = data.current_path;
+        pathEl.textContent = browserCurrentPath;
+
+        const folders = data.items.filter(i => i.is_dir);
+        const files = data.items.filter(i => !i.is_dir);
+
+        let html = '';
+
+        // Folders
+        folders.forEach(item => {
+          html += `
+            <div class="result-item" onclick="loadBrowserContents('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:4px; padding:10px;">
+              <div style="width:32px; height:32px; background:rgba(74,158,255,0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div class="result-title" style="font-size:13px;">${item.name}</div>
+            </div>
+          `;
+        });
+
+        if (folders.length && files.length) html += '<div style="height:1px; background:rgba(255,255,255,0.05); margin:12px 0;"></div>';
+
+        // Files
+        files.forEach(item => {
+          const sizeMB = (item.size / (1024 * 1024)).toFixed(1);
+          html += `
+            <div class="result-item" onclick="openFile('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:4px; padding:10px;">
+              <div style="width:32px; height:32px; background:rgba(255,255,255,0.05); border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2">
+                  <path d="M9 18V5l12-2v13"/>
+                  <circle cx="6" cy="18" r="3"/>
+                  <circle cx="18" cy="16" r="3"/>
+                </svg>
+              </div>
+              <div class="result-info">
+                <div class="result-title" style="font-size:13px;">${item.name}</div>
+                <div style="font-size:10px; color:var(--text-muted);">${sizeMB} MB</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2" style="margin-left:auto; opacity:0.6;">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+          `;
+        });
+
+        if (!folders.length && !files.length) {
+          html = '<div style="padding:40px; text-align:center; color:var(--text-muted);">Folder is empty</div>';
+        }
+
+        list.innerHTML = html;
+      } catch (e) {
+        list.innerHTML = '<div style="padding:20px; color:#f87171;">Failed to load folder</div>';
+      }
+    }
+
+    function openFile(path) {
+      window.open('/api/view?path=' + encodeURIComponent(path), '_blank');
+    }
+  </script>
+</body>
+
+</html>
