@@ -2415,12 +2415,22 @@
           right.appendChild(ta);
         } else {
           const inp = document.createElement('input');
-          inp.type = 'text';
+          const sensitiveKeys = ['password', 'secret', 'arl', 'token'];
+          const isSensitive = sensitiveKeys.some(s => key.toLowerCase().includes(s));
+          
+          inp.type = isSensitive ? 'password' : 'text';
           inp.value = value === null ? '' : String(value);
           inp.dataset.key = key;
           inp.dataset.type = 'string';
           inp.style.flex = '1';
           inp.style.minWidth = '0';
+          
+          if (isSensitive) {
+            inp.addEventListener('focus', () => { inp.type = 'text'; });
+            inp.addEventListener('blur', () => { inp.type = 'password'; });
+            inp.title = 'Click to reveal';
+          }
+          
           right.appendChild(inp);
         }
         row.appendChild(right);
