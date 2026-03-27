@@ -48,9 +48,10 @@ def run_orpheus(args: list[str], job_id: str):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
-            bufsize=1,
+            encoding='utf-8',
+            errors='replace',
             universal_newlines=True,
-            env={**os.environ, "ORPHEUS_GUI": "1"}
+            env={**os.environ, "ORPHEUS_GUI": "1", "PYTHONUTF8": "1"}
         )
         active_procs[job_id] = proc
 
@@ -64,6 +65,10 @@ def run_orpheus(args: list[str], job_id: str):
             line = ansi_escape.sub('', line)
             line = line.strip('\r\n').strip()
             if not line: continue
+
+            # Filter out noisy download metrics
+            if "Download speed:" in line or "Download time:" in line:
+                continue
 
 
 
@@ -99,7 +104,7 @@ def run_orpheus(args: list[str], job_id: str):
         if proc.returncode == 0:
             jobs[job_id]["status"] = "done"
             jobs[job_id]["progress"] = 100
-        else:
+        elif jobs[job_id].get("status") != "stopped":
             jobs[job_id]["status"] = "error"
     except Exception as e:
         job["log"].append(f"ERROR: {e}")
@@ -152,13 +157,17 @@ def api_job_stop(job_id):
     if job_id in active_procs:
         try:
             proc = active_procs[job_id]
-            proc.terminate() # Try graceful SIGTERM
-            # If it doesn't die in 2 seconds, kill it
-            def force_kill():
-                import time
-                time.sleep(2)
-                if proc.poll() is None: proc.kill()
-            threading.Thread(target=force_kill).start()
+            if os.name == 'nt':
+                # Windows: Use taskkill to forcefully terminate the process tree (/T)
+                subprocess.run(['taskkill', '/F', '/T', '/PID', str(proc.pid)], capture_output=True)
+            else:
+                proc.terminate() # Try graceful SIGTERM
+                # If it doesn't die in 2 seconds, kill it
+                def force_kill():
+                    import time
+                    time.sleep(2)
+                    if proc.poll() is None: proc.kill()
+                threading.Thread(target=force_kill).start()
             
             if job_id in jobs:
                 jobs[job_id]["status"] = "stopped"

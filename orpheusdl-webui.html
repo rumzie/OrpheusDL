@@ -19,6 +19,17 @@
       --card-border: rgba(255, 255, 255, 0.08);
       --glass-blur: blur(12px);
       --transition: all 0.3s ease;
+
+      /* Log Colors */
+      --log-white: #E4E5E6;
+      --log-gray: #94a3b8;
+      --log-secondary: #94a3b8;
+      --log-label: #94a3b8;
+      --log-link: #1F6AA5;
+      --log-link-hover: #4A9EFF;
+      --log-warning: #F2C94C;
+      --log-error: #FF5252;
+      --log-success: #00C851;
     }
 
     * {
@@ -43,24 +54,37 @@
       background: rgba(0,0,0,0.3);
       border: 1px solid rgba(255,255,255,0.1);
       padding: 12px;
-      font-family: monospace;
+      font-family: "Roboto Mono", monospace;
       font-size: 11px;
-      color: var(--text-muted);
+      color: var(--log-secondary);
       max-height: 200px;
       overflow-y: auto;
       border-radius: 8px;
       white-space: pre-wrap;
       word-break: break-all;
+      line-height: 1.5;
     }
     .dl-log a {
-      color: var(--accent-1);
+      color: var(--log-link);
       text-decoration: underline;
       font-weight: 500;
     }
     .dl-log a:hover {
-      color: #fff;
+      color: var(--log-link-hover);
       text-decoration: none;
     }
+
+    /* Log Formatting Utility Classes */
+    .log-white { color: var(--log-white); font-weight: 500; }
+    .log-secondary { color: var(--log-secondary); }
+    .log-gray { color: var(--log-gray); }
+    .log-warning { color: var(--log-warning); }
+    .log-error { color: var(--log-error); font-weight: 600; }
+    .log-success { color: var(--log-success); font-weight: 600; }
+    .log-label { color: var(--log-secondary); font-weight: 400; }
+    .log-value { color: var(--log-white); font-weight: 500; }
+    .log-bold { font-weight: 700; }
+    .log-icon { font-family: "Inter", sans-serif; margin-right: 4px; }
 
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
@@ -429,10 +453,10 @@
     }
 
     .glass-btn.success {
-      background: rgba(34, 197, 94, 0.12) !important;
-      color: #4ade80 !important;
-      border: 1px solid rgba(34, 197, 94, 0.5) !important;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15) !important;
+      background: rgba(0, 200, 81, 0.12) !important;
+      color: #00C851 !important;
+      border: 1px solid rgba(0, 200, 81, 0.5) !important;
+      box-shadow: 0 4px 12px rgba(0, 200, 81, 0.15) !important;
     }
 
     /* ── SEARCH ROW ── */
@@ -455,8 +479,8 @@
     .result-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
+      gap: 6px; /* Reduced from 10px */
+      padding: 8px 4px; /* Reduced from 12px 8px */
       border-radius: 12px;
       cursor: pointer;
       transition: var(--transition);
@@ -475,6 +499,205 @@
       transform: translateX(6px);
     }
 
+    /* ── SETUP GUIDES ── */
+    .setup-guide-card {
+      background: var(--card-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      margin-top: 14px;
+      margin-bottom: 24px; /* Space before Save button */
+      padding: 0;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .guide-collapsible-header {
+      padding: 16px 22px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .guide-collapsible-header:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .guide-collapse-content {
+      padding: 0 22px 22px 22px;
+      display: none;
+      font-size: 11px;
+    }
+
+    .guide-collapse-content.expanded {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    .guide-arrow {
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+    }
+
+    .guide-arrow.expanded {
+      transform: rotate(180deg);
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .guide-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .guide-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .guide-title {
+      font-family: "Inter", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .guide-columns {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .guide-column {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .guide-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .guide-step {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .step-number {
+      font-weight: 700;
+      color: #fff;
+      min-width: 18px;
+      font-size: 11px;
+    }
+
+    .step-content {
+      color: var(--text-muted);
+      flex: 1;
+      font-size: 11px;
+    }
+
+    .step-content b {
+      color: var(--text-color);
+    }
+
+    .guide-link {
+      color: var(--accent-1);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .guide-link:hover {
+      color: #6db3ff;
+    }
+
+    .guide-bullet {
+      display: block;
+      padding-left: 15px;
+      position: relative;
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    .guide-bullet::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--text-muted);
+    }
+
+    .recommended-values {
+      margin-top: 10px;
+    }
+
+    .value-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 11px;
+    }
+
+    .value-label {
+      color: var(--text-muted);
+      min-width: 100px;
+      font-size: 11px;
+    }
+
+    .value-text {
+      color: var(--accent-1);
+      font-family: "Roboto Mono", monospace;
+      background: rgba(74, 158, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      word-break: break-all;
+      font-size: 11px;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .copy-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .demo-btn-container {
+      margin-bottom: 0;
+    }
+
+    .small-glass-btn {
+      padding: 5px 12px;
+      font-size: 10px;
+      border-radius: 20px;
+    }
+
     .result-item.selected {
       background: rgba(74, 158, 255, 0.08);
       border-color: rgba(74, 158, 255, 0.3);
@@ -484,9 +707,10 @@
       font-family: "Roboto Mono", monospace;
       font-size: 11px;
       color: var(--text-muted);
-      min-width: 24px;
-      text-align: center;
+      min-width: 14px; /* Reduced from 20px */
+      text-align: right;
       opacity: 0.6;
+      margin-right: 4px;
     }
 
     .result-info {
@@ -846,15 +1070,15 @@
     }
 
     .badge-red {
-      background: rgba(239, 68, 68, 0.12);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      background: rgba(255, 82, 82, 0.12);
+      color: #FF5252;
+      border: 1px solid rgba(255, 82, 82, 0.25);
     }
 
     .badge-green {
-      background: rgba(34, 197, 94, 0.12);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.25);
+      background: rgba(0, 200, 81, 0.12);
+      color: #00C851;
+      border: 1px solid rgba(0, 200, 81, 0.25);
     }
 
     /* Platform pills colored only when selected */
@@ -1116,7 +1340,7 @@
       <div class="glass-card">
         <div class="card-label blue">URL</div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <input type="text" id="url-input" placeholder="https://soundcloud.com/artist/track-name"
+          <input type="text" id="url-input" placeholder="https://tidal.com/track/123456789"
             style="flex:1; min-width:0;" />
           <button class="ghost-btn"
             style="padding:10px; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid var(--card-border);"
@@ -1760,19 +1984,48 @@
     // Active Jobs Tracking
     let activeJobId = null;
 
+    function resetStopButton() {
+      const btn = document.getElementById('dl-stop-btn');
+      if (btn) {
+        btn.innerHTML = 'Stop';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.style.display = 'none';
+      }
+    }
+
     async function stopJob(jobId) {
       if (!jobId) return;
-      if (!confirm('Are you sure you want to stop the current download?')) return;
+      const btn = document.getElementById('dl-stop-btn');
+      if (btn) {
+        btn.innerHTML = 'Stopping...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'wait';
+        btn.classList.add('badge-red'); // Visual feedback
+      }
       try {
         const res = await fetch(`/api/job/stop/${jobId}`, { method: 'POST' });
         const data = await res.json();
         if (data.status === 'success') {
-          document.getElementById('dl-stop-btn').style.display = 'none';
+          // Button will be hidden by pollJob once state confirms
         } else {
           alert('Error stopping download: ' + data.message);
+          if (btn) {
+            btn.innerHTML = 'Stop';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+          }
         }
       } catch (e) {
-        alert('Failed to contact server to stop job.');
+        console.error('Failed to contact server to stop job:', e);
+        if (btn) {
+          btn.innerHTML = 'Stop';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }
       }
     }
 
@@ -1797,6 +2050,7 @@
       'tidal': { name: 'TIDAL', color: '#33ffe7' },
       'apple': { name: 'Apple Music', color: '#FA586A' },
       'applemusic': { name: 'Apple Music', color: '#FA586A' },
+      'apple music': { name: 'Apple Music', color: '#FA586A' },
       'beatport': { name: 'Beatport', color: '#00ff89' },
       'beatsource': { name: 'Beatsource', color: '#16a8f4' },
       'deezer': { name: 'Deezer', color: '#a238ff' },
@@ -1805,6 +2059,210 @@
       'spotify': { name: 'Spotify', color: '#1cc659' },
       'youtube': { name: 'YouTube', color: '#FF0000' }
     };
+
+    // --- PLATFORM SETUP GUIDES ---
+    // Content data moved from desktop GUI to parity functionality
+    const moduleGuides = {
+      'applemusic': {
+        title: "How to set up",
+        columns: [
+          {
+            demoUrl: "https://youtu.be/tbZaCFUnhow",
+            steps: [
+              { num: "1.", text: "Install extension" },
+              { text: "Chrome / Edge → <a class='guide-link' onclick=\"window.open('https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc?pli=1')\">Get cookies.txt</a> or Firefox → <a class='guide-link' onclick=\"window.open('https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/')\">cookies.txt</a>", bullet: false },
+              { num: "2.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://music.apple.com')\">Apple Music</a> <i>(active subscription required)</i>" },
+              { num: "3.", text: "Export & save as <b>cookies.txt</b><br><small>Path: ./config/cookies.txt</small>" }
+            ]
+          },
+          {
+            title: "How to set up wrapper",
+            subtitle: "(Optional: to download Dolby Atmos / ALAC)",
+            demoUrl: "https://youtu.be/VyEThfMFDYs",
+            steps: [
+              { text: "See demo / description below the video" }
+            ]
+          }
+        ]
+      },
+      'deezer': {
+        title: "How to set up",
+        columns: [
+          {
+            title: "Standard Setup",
+            demoUrl: "https://youtu.be/TJTY4zSEgHU",
+            steps: [
+              { num: "1.", text: "Fill in the email & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.deezer.com')\">Deezer</a> <i>(active subscription required)</i> — Save." }
+            ]
+          },
+          {
+            title: "ARL Setup",
+            steps: [
+              { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://www.deezer.com')\">Deezer</a>" },
+              { num: "2.", text: "Open Developer Tools in your browser" },
+              { num: "3.", text: "Go to Application/Storage → Cookies → www.deezer.com" },
+              { num: "4.", text: "Seek for <span style='color:var(--accent-1)'>arl</span> → copy & paste above — Save." }
+            ]
+          },
+          {
+            title: "Recommended Values",
+            type: "recommended",
+            values: [
+              { label: "client_id", value: "613143" },
+              { label: "client_secret", value: "e635f790edfbc8f7574447214e3271e7" },
+              { label: "bf_secret", value: "g93bsW9bwfo79ml6" }
+            ]
+          }
+        ]
+      },
+      'qobuz': {
+        title: "How to set up",
+        columns: [
+          {
+            title: "Standard Setup",
+            demoUrl: "https://youtu.be/sCuiyq-Sgo4",
+            steps: [
+              { num: "1.", text: "Fill in the email & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.qobuz.com')\">Qobuz</a> <i>(active subscription required)</i> — Save." }
+            ]
+          },
+          {
+            title: "ID/Token Setup",
+            steps: [
+              { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://play.qobuz.com')\">https://play.qobuz.com</a>" },
+              { num: "2.", text: "Open Developer Tools in your browser" },
+              { num: "3.", text: "Go to Application/Storage → Local storage → play.qobuz.com" },
+              { num: "4.", text: "Seek for <span style='color:var(--accent-1)'>local user</span>" },
+              { num: "5.", text: "Copy <span style='color:var(--accent-1)'>ID</span> + <span style='color:var(--accent-1)'>Token</span> & paste above — Save." }
+            ]
+          },
+          {
+            title: "Recommended Values",
+            type: "recommended",
+            values: [
+              { label: "app_id", value: "798273057" },
+              { label: "app_secret", value: "abb21364945c0583309667d13ca3d93a" }
+            ]
+          }
+        ]
+      },
+      'soundcloud': {
+        title: "How to set up",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://soundcloud.com')\">SoundCloud</a> <i>(active Go+ subscription required)</i>" },
+              { num: "2.", text: "Open Developer Tools in your browser" },
+              { num: "3.", text: "Go to Application/Storage → Cookies → soundcloud.com" },
+              { num: "4.", text: "Seek for <span style='color:var(--accent-1)'>oauth_token</span> (e.g. 2-000000-000000...)" },
+              { num: "5.", text: "Copy & paste above — Save." }
+            ]
+          }
+        ]
+      },
+      'tidal': {
+        title: "How to set up",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Just enter url to download or use search function" },
+              { num: "2.", text: "In the browser window that opens, fill in the email & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://tidal.com')\">TIDAL</a>" },
+              { num: "3.", text: "Hit continue to link your device & close the browser" }
+            ]
+          },
+          {
+            title: "Recommended Values",
+            type: "recommended",
+            values: [
+              { label: "tv_atmos_token", value: "4N3n6Q1x95LL5K7p" },
+              { label: "tv_atmos_secret", value: "oKOXfJW371cX6xaZ0PyhgGNBdNLlBZd4AKKYougMjik=" },
+              { label: "mobile_atmos_hires_token", value: "km8T1xS355y7dd3H" },
+              { label: "mobile_hires_token", value: "6BDSRdpK9hqEBTgU" }
+            ]
+          }
+        ]
+      },
+      'spotify': {
+        title: "How to set up",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://developer.spotify.com/dashboard')\">Spotify Dashboard</a> <i>(active Premium required)</i>" },
+              { num: "2.", text: "Take over username & fill in above" },
+              { num: "3.", text: "In the dashboard, create an app (or use existing one)" },
+              { num: "4.", text: "Add Redirect URI <b>http://127.0.0.1:4381/login</b>" },
+              { num: "5.", text: "Save → Copy <b>Client ID</b> + <b>Secret</b>, paste them above — Save." }
+            ]
+          }
+        ]
+      },
+      'youtube': {
+        title: "How to set up",
+        subtitle: "(Recommended: to prevent 403 errors / for age-restricted content)",
+        demoUrl: "https://youtu.be/XAnP6s11TvY",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Install extension (Get cookies.txt locally)" },
+              { num: "2.", text: "Manage extension → Enable 'Allow in incognito / private window'" },
+              { num: "3.", text: "Open a new private / incognito window" }
+            ]
+          },
+          {
+            steps: [
+              { num: "4.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://youtube.com')\">YouTube</a>" },
+              { num: "5.", text: "In same tab open: <b>youtube.com/robots.txt</b>" },
+              { num: "6.", text: "Export & save as <b>youtube-cookies.txt</b><br><small>Path: ./config/youtube-cookies.txt</small>" }
+            ]
+          }
+        ]
+      },
+      'beatport': {
+        title: "How to set up",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Fill in the username & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.beatport.com')\">Beatport</a>" },
+              { text: "<i>(active Beatport Professional subscription required)</i> — Save." }
+            ]
+          }
+        ]
+      },
+      'beatsource': {
+        title: "How to set up",
+        columns: [
+          {
+            steps: [
+              { num: "1.", text: "Fill in the username & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.beatsource.com')\">Beatsource</a>" },
+              { text: "<i>(active Beatsource Pro subscription required)</i> — Save." }
+            ]
+          }
+        ]
+      }
+    };
+
+    function copyToClipboard(text, btn) {
+      if (!navigator.clipboard) {
+        // Fallback for older browsers or non-HTTPS
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      } else {
+        navigator.clipboard.writeText(text);
+      }
+      
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓';
+      btn.style.borderColor = 'var(--accent-1)';
+      btn.style.color = 'var(--accent-1)';
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }, 1500);
+    }
 
     function getPlatformBranding(raw) {
       if (!raw) return { name: 'Download', color: 'inherit' };
@@ -1988,6 +2446,7 @@
 
     // ── DOWNLOAD BY URL ──
     async function startDownload() {
+      resetStopButton();
       const url = document.getElementById('url-input').value.trim();
       if (!url) { alert('Please enter a URL'); return; }
 
@@ -2030,25 +2489,159 @@
       }
     }
 
-    // ── LINKIFY ──
-    function linkify(text) {
-      // 1. Repair split URLs (specific to OrpheusDL output)
-      // Automatically join lines beginning with 'URL: ' that are split by newlines
-      // until a common phrase like 'If the browser' or another newline/end appears.
+    // ── LOG FORMATTING ──
+    function formatLog(logArray) {
+      if (!logArray || !logArray.length) return '';
+      
+      // 1. Join and handle split URLs (specific to OrpheusDL output)
+      let text = logArray.join('\n');
       text = text.replace(/URL:\s+([\s\S]+?)(?=\s+If the browser|$)/g, (match, p1) => {
-          // Remove all newlines and spaces from the URL segment to rejoin it
           return 'URL: ' + p1.replace(/\s+/g, '');
       });
 
-      // 2. Escape non-URL parts safely to prevent XSS
-      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // 2. Escape HTML & Split
+      const escapedLines = text.split('\n').map(line => 
+          line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      );
       
-      // 3. Robust URL detection regex
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      
-      // We need to handle the case where the regex might match an already-escaped &amp;
-      // In Javascript, replace() with $1 works fine even if it contains &amp;
-      return escaped.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+      // 3. Process each line for styles
+      const formattedLines = escapedLines.map(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return line;
+
+        // --- Heading Lines (Dashes) ---
+        if (line.startsWith('---') && line.endsWith('---')) {
+          const content = line.slice(3, -3).trim();
+          if (content.toLowerCase().includes('stopped')) {
+            return `<span class="log-gray">---</span> <span class="log-error">${content}</span> <span class="log-gray">---</span>`;
+          }
+          return `<span class="log-gray">---</span> <span class="log-white">${content}</span> <span class="log-gray">---</span>`;
+        }
+
+        // --- Heading Lines (Equals) ---
+        if (line.startsWith('===') && line.endsWith('===')) {
+          const content = line.slice(3, -3).trim();
+          
+          // Check for success/failure/skip indicators
+          if (content.match(/^[+x&>]/) || content.toLowerCase().match(/(completed|failed|skipped)/)) {
+            const isError = content.includes('x') || content.toLowerCase().includes('failed');
+            const isWarning = content.includes('&gt;') || content.includes('>') || content.toLowerCase().includes('skipped');
+            let colorClass = 'log-success';
+            if (isError) colorClass = 'log-error';
+            else if (isWarning) colorClass = 'log-warning';
+            
+            return `<span class="log-gray">===</span> <span class="${colorClass}">${content}</span> <span class="log-gray">===</span>`;
+          }
+
+          // Case: Downloading track/album/playlist/label {Name} ({ID})
+          const downloadRegex = /^(Downloading (?:track|album|playlist|label)) (.+?)( \(.+\))?$/i;
+          const dlMatch = content.match(downloadRegex);
+          if (dlMatch) {
+            let res = `<span class="log-gray">===</span> <span class="log-secondary">${dlMatch[1]}</span> <span class="log-white">${dlMatch[2]}</span>`;
+            if (dlMatch[3]) res += `<span class="log-secondary">${dlMatch[3]}</span>`;
+            res += ` <span class="log-gray">===</span>`;
+            return res;
+          }
+
+          return `<span class="log-gray">===</span> <span class="log-white">${content}</span> <span class="log-gray">===</span>`;
+        }
+
+        // --- Metadata Lines ---
+        const metaRegex = /^(Artist|Artists|Label|Album|Playlist creator|Year|Release year|Playlist creation year|Duration|Number of tracks|Quality):\s+(.+)$/i;
+        const metaMatch = line.match(metaRegex);
+        if (metaMatch) {
+          const value = metaMatch[2];
+          const parts = value.match(/^(.+?)(\s*\(.+\))?$/);
+          if (parts && parts[2]) {
+            return `<span class="log-label">${metaMatch[1]}:</span> <span class="log-value">${parts[1]}</span><span class="log-gray">${parts[2]}</span>`;
+          }
+          return `<span class="log-label">${metaMatch[1]}:</span> <span class="log-value">${value}</span>`;
+        }
+
+        // --- Platform Line ---
+        const platformRegex = /^(Platform):\s+(.+)$/i;
+        const platformMatch = line.match(platformRegex);
+        if (platformMatch) {
+          const branding = getPlatformBranding(platformMatch[2]);
+          return `<span class="log-label">${platformMatch[1]}:</span> <span class="log-value" style="color: ${branding.color}">${platformMatch[2]}</span>`;
+        }
+
+        // --- Generic Downloading Lines (no ===) ---
+        const downloadRegexRaw = /^(Downloading (?:track|album|playlist|label)) (.+?)( \(.+\))?$/i;
+        const dlMatchRaw = line.match(downloadRegexRaw);
+        if (dlMatchRaw) {
+          let res = `<span class="log-gray">${dlMatchRaw[1]}</span> <span class="log-white">${dlMatchRaw[2]}</span>`;
+          if (dlMatchRaw[3]) res += `<span class="log-gray">${dlMatchRaw[3]}</span>`;
+          return res;
+        }
+
+        // --- Track Lines (Improved Regex and Color Isolation) ---
+        // Match both Windows (x, +, >) and Unix (+, ✓, ▶, ✗, ⚠) style markers
+        const trackRegex = /^(\d+\/\d+)\s+([+x✓✗▶⚠]|&gt;)\s+(.+)$/;
+        const trackMatch = line.match(trackRegex);
+        if (trackMatch) {
+          const index = trackMatch[1];
+          const symbol = trackMatch[2];
+          let fullTitle = trackMatch[3];
+          
+          let title = fullTitle;
+          let extra = '';
+          let extraClass = 'log-secondary';
+
+          // Look for status markers in the LAST parenthesis
+          const statusMatch = fullTitle.match(/\s+(\([^)]*?(?:already exists|skip|failed|error)[^)]*?\))$/i);
+          if (statusMatch) {
+            title = fullTitle.slice(0, -statusMatch[1].length).trim();
+            extra = statusMatch[1];
+            
+            const isWarning = extra.toLowerCase().includes('exists') || extra.toLowerCase().includes('skip');
+            const isError = extra.toLowerCase().includes('failed') || extra.toLowerCase().includes('error');
+            if (isWarning) extraClass = 'log-warning';
+            else if (isError) extraClass = 'log-error';
+          }
+
+          let symbolClass = 'log-secondary';
+          if (symbol === '+') symbolClass = 'log-success';
+          else if (symbol === '&gt;') symbolClass = 'log-warning';
+          else if (symbol === 'x' || symbol === '✗') symbolClass = 'log-error';
+          else if (symbol === '⚠') symbolClass = 'log-warning';
+
+          let res = `<span class="log-gray">${index}</span> <span class="${symbolClass}">${symbol}</span> <span class="log-white" style="color:var(--text-color); font-weight:400;">${title}</span>`;
+          if (extra) {
+            res += ` <span class="${extraClass}">${extra}</span>`;
+          }
+          return res;
+        }
+
+        // --- Success / Done ---
+        if (line.includes('✓') || line.toUpperCase().startsWith('DONE') || line.toLowerCase().includes('successfully')) {
+          return `<span class="log-success"><span class="log-icon">✓</span>${line}</span>`;
+        }
+
+        // --- Error / Failed (General lines) ---
+        if (line.toUpperCase().includes('ERROR') || line.toUpperCase().includes('FAILED')) {
+          // If it's a "Track failed" but didn't match the trackRegex (e.g. malformed prefix)
+          if (line.includes('/') && line.includes('(')) {
+             // Try to isolate the status label even in malformed lines
+             const labelMatch = line.match(/\((failed|error)\)$/i);
+             if (labelMatch) {
+                const pre = line.slice(0, -labelMatch[0].length);
+                return `<span class="log-secondary">${pre}</span> <span class="log-error">${labelMatch[0]}</span>`;
+             }
+          }
+          return `<span class="log-error"><span class="log-icon">⚠</span>${line}</span>`;
+        }
+
+        // --- URL Detection (for generic lines) ---
+        const urlRegex = /(https?:\/\/[^\s]+?)(?=[,.]?(\s|$))/g;
+        if (urlRegex.test(line)) {
+          return line.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
+        }
+
+        return line;
+      });
+
+      return formattedLines.join('\n');
     }
 
     // ── POLL JOB ──
@@ -2059,6 +2652,11 @@
       if (logEl) logEl.textContent = '';
 
       const iv = setInterval(async () => {
+        // --- PREVENTION: Abandon this interval if a new job has started ---
+        if (job_id !== activeJobId) {
+           clearInterval(iv);
+           return;
+        }
         try {
           const res = await fetch('/api/job/' + job_id);
           const job = await res.json();
@@ -2066,7 +2664,7 @@
           lbl.textContent = job.progress + '%';
 
           if (logEl && job.log) {
-            logEl.innerHTML = linkify(job.log.join('\n'));
+            logEl.innerHTML = formatLog(job.log);
             logEl.scrollTop = logEl.scrollHeight;
           }
 
@@ -2250,7 +2848,7 @@
       <div class="result-item" onclick="selectResult(this)" data-index="${r.num}" data-platform="${r.platform || ''}">
         <div class="result-num">${r.num}</div>
         <div class="result-cover-container">
-          ${r.imageUrl ? `<img src="${r.imageUrl}" class="result-cover" loading="lazy">` : `<div class="result-cover-placeholder">?</div>`}
+          ${r.imageUrl ? `<img src="${r.imageUrl}" class="result-cover" loading="lazy" onerror="this.onerror=null;this.src='https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg';">` : `<div class="result-cover-placeholder">?</div>`}
           ${platformIcon ? `<div class="platform-icon-overlay"><img src="/platforms/${platformIcon}"></div>` : ''}
         </div>
         <div class="result-info">
@@ -2305,6 +2903,7 @@
       if (logContainer) logContainer.style.display = 'block';
 
       for (let i = 0; i < selectedItems.length; i++) {
+        resetStopButton();
         const selected = selectedItems[i];
         const index = selected.dataset.index;
         const platform = selected.dataset.platform || 'Search';
@@ -2343,7 +2942,7 @@
                 lbl.textContent = job.progress + '%';
 
                 if (logEl && job.log) {
-                  logEl.innerHTML = linkify(job.log.join('\n'));
+                  logEl.innerHTML = formatLog(job.log);
                   logEl.scrollTop = logEl.scrollHeight;
                 }
 
@@ -2636,6 +3235,132 @@
         row.appendChild(right);
         container.appendChild(row);
       });
+
+      // --- SETUP GUIDES RENDERING (Separate Collapsible Card) ---
+      const guideData = moduleGuides[moduleKey.toLowerCase()];
+      if (guideData) {
+        const tabContainer = document.getElementById('tab-' + moduleKey);
+        if (!tabContainer) return;
+
+        // Remove existing guide card if any (to prevent duplicates on re-render)
+        const oldCard = document.getElementById('guide-card-' + moduleKey);
+        if (oldCard) oldCard.remove();
+
+        const guideCard = document.createElement('div');
+        guideCard.className = 'setup-guide-card';
+        guideCard.id = 'guide-card-' + moduleKey;
+        
+        const header = document.createElement('div');
+        header.className = 'guide-collapsible-header';
+        header.innerHTML = `
+          <div class="card-label blue" style="margin-bottom:0; font-size:10px;">HOW TO SET UP</div>
+          <div class="guide-arrow">▼</div>
+        `;
+        
+        const content = document.createElement('div');
+        content.className = 'guide-collapse-content';
+        
+        header.onclick = () => {
+          content.classList.toggle('expanded');
+          header.querySelector('.guide-arrow').classList.toggle('expanded');
+        };
+
+        let html = '';
+        
+        // --- CONTENT LAYOUT ---
+        // We remove the redundant title and put See Demo on same height as content
+        html += `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-top:12px;">`;
+        html += `<div style="flex:1;">`; // Content wrapper
+        
+        if (guideData.subtitle) {
+          html += `<div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${guideData.subtitle}</div>`;
+        }
+
+        html += `<div class="guide-columns">`;
+        
+        guideData.columns.forEach(col => {
+          // Check condition if present
+          if (col.condition && !col.condition(settingsCache)) return;
+          
+          html += `<div class="guide-column">`;
+          
+          // Column Header with Demo Button
+          html += `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">`;
+          html += `<div>`; // Title/Subtitle wrapper
+          if (col.title && col.type !== 'recommended') {
+            html += `<div style="font-size:12px; font-weight:700; color:var(--text-color); margin-bottom:2px;">${col.title}</div>`;
+          }
+          if (col.subtitle) {
+            html += `<div style="font-size:10px; color:var(--text-muted); line-height:1.4;">${col.subtitle}</div>`;
+          }
+          html += `</div>`;
+          
+          if (col.demoUrl) {
+            html += `
+              <div class="demo-btn-container" style="flex-shrink:0; margin-left:10px;">
+                <button class="glass-btn small-glass-btn" onclick="window.open('${col.demoUrl}')">
+                  See demo
+                </button>
+              </div>
+            `;
+          }
+          html += `</div>`;
+          
+          if (col.type === 'recommended') {
+            html += `
+              <div style="font-size:12px; font-weight:700; color:var(--text-color); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:14px;">🔑</span> ${col.title || 'Recommended'}
+              </div>
+              <div class="recommended-values">
+                ${col.values.map(v => `
+                  <div class="value-row">
+                    <div class="value-label">${v.label}:</div>
+                    <div class="value-text">${v.value}</div>
+                    <div class="copy-btn" onclick="copyToClipboard('${v.value}', this)" title="Copy to clipboard">⧉</div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          } else {
+            html += `<div class="guide-steps">`;
+            col.steps.forEach(step => {
+              if (step.bullet) {
+                html += `<div class="guide-bullet" style="font-size:11px;">${step.text}</div>`;
+              } else {
+                html += `
+                  <div class="guide-step">
+                    ${step.num ? `<div class="step-number" style="font-size:11px;">${step.num}</div>` : '<div class="step-number"></div>'}
+                    <div class="step-content" style="font-size:11px;">${step.text}</div>
+                  </div>
+                `;
+              }
+            });
+            html += `</div>`;
+          }
+          html += `</div>`; // end column
+        });
+        
+        html += `</div>`; // end guide-columns
+        html += `</div>`; // end flex content wrapper
+        
+        // Legacy top-level demo support (optional)
+        if (guideData.demoUrl && !guideData.columns.some(c => c.demoUrl)) {
+          html += `
+            <div class="demo-btn-container" style="margin-left:20px; flex-shrink:0;">
+              <button class="glass-btn small-glass-btn" onclick="window.open('${guideData.demoUrl}')">
+                See demo
+              </button>
+            </div>
+          `;
+        }
+        
+        html += `</div>`; // end horizontal flex
+        
+        content.innerHTML = html;
+        guideCard.appendChild(header);
+        guideCard.appendChild(content);
+        tabContainer.appendChild(guideCard);
+      }
     }
 
     async function saveAllSettings() {
