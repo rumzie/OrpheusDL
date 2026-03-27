@@ -1,0 +1,67 @@
+﻿diff --git a/orpheus/core.py b/orpheus/core.py
+index 3b5cf8c..b51350a 100644
+--- a/orpheus/core.py
++++ b/orpheus/core.py
+@@ -116,7 +116,7 @@ class Orpheus:
+         self.session_storage_location = os.path.join(self.data_folder_base, 'loginstorage.bin')
+ 
+         os.makedirs('config', exist_ok=True)
+-        self.settings = json.loads(open(self.settings_location, 'r').read()) if os.path.exists(self.settings_location) else {}
++        self.settings = json.loads(open(self.settings_location, 'r', encoding='utf-8').read()) if os.path.exists(self.settings_location) else {}
+ 
+         try:
+             if self.settings['global']['advanced']['debug_mode']: 
+@@ -401,7 +401,7 @@ class Orpheus:
+                 elif 'custom_data' in current_session: current_session.pop('custom_data')
+ 
+         pickle.dump({'advancedmode': advanced_login_mode, 'modules': new_module_sessions}, open(self.session_storage_location, 'wb'))
+-        open(self.settings_location, 'w').write(json.dumps(new_settings, indent = 4, sort_keys = False))
++        open(self.settings_location, 'w', encoding='utf-8').write(json.dumps(new_settings, indent = 4, sort_keys = False))
+ 
+         if new_setting_detected:
+             if self.settings.get('global', {}).get('advanced', {}).get('debug_mode', False):
+diff --git a/orpheus/music_downloader.py b/orpheus/music_downloader.py
+index 14b0557..9569b4c 100644
+--- a/orpheus/music_downloader.py
++++ b/orpheus/music_downloader.py
+@@ -387,7 +387,7 @@ class Downloader:
+                 'gray_text': GRAY,                  # Gray for general status text
+                 'yellow_text': YELLOW,              # Yellow for "(already exists)" text
+                 'red_text': RED,                    # Red for "(failed)" text
+-                'reset': RESET
++                'reset': f'{RESET}'
+             }
+         else:
+             # Use Unicode symbols for Unix/macOS terminals (better Unicode support)
+@@ -399,7 +399,7 @@ class Downloader:
+                 'gray_text': GRAY,                  # Gray for general status text
+                 'yellow_text': YELLOW,              # Yellow for "(already exists)" text
+                 'red_text': RED,                    # Red for "(failed)" text
+-                'reset': RESET
++                'reset': f'{RESET}'
+             }
+ 
+     def create_temp_filename(self):
+@@ -722,14 +722,14 @@ class Downloader:
+             else:
+                 time_str = f"{seconds:.1f}s"
+             
+-            # Show performance summary in order: Download speed, Download time
+-            # Only show speed metrics if data was actually downloaded
+-            if total_mb > 0:
+-                original_print(f"Download speed: {overall_speed_mbps:.0f} Mbps", drop_level=performance_summary_indent)
+-                original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
+-            else:
+-                # Don't assume tracks already existed - they might have failed
+-                original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
++            # performance metrics removed for cleaner log output as requested
++            pass
++            # if total_mb > 0:
++            #     original_print(f"Download speed: {overall_speed_mbps:.0f} Mbps", drop_level=performance_summary_indent)
++            #     original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
++            # else:
++            #     # Don't assume tracks already existed - they might have failed
++            #     original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
+         
+         # Convert results to expected format
+         for index, download_result, error in results_temp:

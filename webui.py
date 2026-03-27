@@ -10,6 +10,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import threading
 import uuid
 from pathlib import Path
@@ -34,7 +35,7 @@ def run_orpheus(args: list[str], job_id: str):
     """Run orpheus.py in a background thread and stream output to job log."""
     job = jobs[job_id]
     job["status"] = "running"
-    cmd = ["python", "-u", str(ORPHEUS_PY)] + args + ["--progress"]
+    cmd = [sys.executable, "-u", str(ORPHEUS_PY)] + args + ["--progress"]
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     progress_re = re.compile(r'(\d+)%')
     # tqdm progress bar lines look like: "33%|####2  | 6.29M/19.2M [00:00<00:01, 8.31MB/s]"

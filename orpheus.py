@@ -13,6 +13,18 @@ import argparse
 import re
 import json
 from urllib.parse import urlparse
+# 0. Robust dependency check before starting orpheus core
+try:
+    import requests
+    import urllib3
+    import flask
+except ImportError as e:
+    missing_module = str(e).split("'")[-2] if "'" in str(e) else str(e)
+    print(f"\n[FATAL ERROR] Missing dependency: {missing_module}")
+    print(f"Please install it using: pip install {missing_module}")
+    print("Or run: pip install -r requirements.txt")
+    sys.exit(1)
+
 from orpheus.core import *
 from orpheus.music_downloader import beauty_format_seconds
 from utils.models import QualityEnum
