@@ -689,6 +689,9 @@
     }
 
     .demo-btn-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-bottom: 0;
     }
 
@@ -2080,7 +2083,7 @@
             subtitle: "(Optional: to download Dolby Atmos / ALAC)",
             demoUrl: "https://youtu.be/VyEThfMFDYs",
             steps: [
-              { text: "See demo / description below the video" }
+              { text: "See demo / description below the video", plain: true }
             ]
           }
         ]
@@ -2090,13 +2093,13 @@
         columns: [
           {
             title: "Standard Setup",
-            demoUrl: "https://youtu.be/TJTY4zSEgHU",
             steps: [
               { num: "1.", text: "Fill in the email & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.deezer.com')\">Deezer</a> <i>(active subscription required)</i> — Save." }
             ]
           },
           {
             title: "ARL Setup",
+            demoUrl: "https://youtu.be/TJTY4zSEgHU",
             steps: [
               { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://www.deezer.com')\">Deezer</a>" },
               { num: "2.", text: "Open Developer Tools in your browser" },
@@ -2120,13 +2123,13 @@
         columns: [
           {
             title: "Standard Setup",
-            demoUrl: "https://youtu.be/sCuiyq-Sgo4",
             steps: [
               { num: "1.", text: "Fill in the email & password created, when signed up to <a class='guide-link' onclick=\"window.open('https://www.qobuz.com')\">Qobuz</a> <i>(active subscription required)</i> — Save." }
             ]
           },
           {
             title: "ID/Token Setup",
+            demoUrl: "https://youtu.be/sCuiyq-Sgo4",
             steps: [
               { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://play.qobuz.com')\">https://play.qobuz.com</a>" },
               { num: "2.", text: "Open Developer Tools in your browser" },
@@ -2149,6 +2152,7 @@
         title: "How to set up",
         columns: [
           {
+            demoUrl: "https://www.youtube.com/watch?v=LEEJosz2CYg",
             steps: [
               { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://soundcloud.com')\">SoundCloud</a> <i>(active Go+ subscription required)</i>" },
               { num: "2.", text: "Open Developer Tools in your browser" },
@@ -2185,6 +2189,7 @@
         title: "How to set up",
         columns: [
           {
+            demoUrl: "https://www.youtube.com/watch?v=aJYDACfilRM",
             steps: [
               { num: "1.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://developer.spotify.com/dashboard')\">Spotify Dashboard</a> <i>(active Premium required)</i>" },
               { num: "2.", text: "Take over username & fill in above" },
@@ -2198,17 +2203,13 @@
       'youtube': {
         title: "How to set up",
         subtitle: "(Recommended: to prevent 403 errors / for age-restricted content)",
-        demoUrl: "https://youtu.be/XAnP6s11TvY",
         columns: [
           {
+            demoUrl: "https://youtu.be/XAnP6s11TvY",
             steps: [
               { num: "1.", text: "Install extension (Get cookies.txt locally)" },
               { num: "2.", text: "Manage extension → Enable 'Allow in incognito / private window'" },
-              { num: "3.", text: "Open a new private / incognito window" }
-            ]
-          },
-          {
-            steps: [
+              { num: "3.", text: "Open a new private / incognito window" },
               { num: "4.", text: "Log in to <a class='guide-link' onclick=\"window.open('https://youtube.com')\">YouTube</a>" },
               { num: "5.", text: "In same tab open: <b>youtube.com/robots.txt</b>" },
               { num: "6.", text: "Export & save as <b>youtube-cookies.txt</b><br><small>Path: ./config/youtube-cookies.txt</small>" }
@@ -3236,15 +3237,18 @@
         container.appendChild(row);
       });
 
-      // --- SETUP GUIDES RENDERING (Separate Collapsible Card) ---
+      // --- SETUP GUIDES RENDERING (Collapsible Card at Bottom) ---
       const guideData = moduleGuides[moduleKey.toLowerCase()];
-      if (guideData) {
-        const tabContainer = document.getElementById('tab-' + moduleKey);
-        if (!tabContainer) return;
-
+      const tabContainer = document.getElementById('tab-' + moduleKey);
+      
+      if (guideData && tabContainer) {
         // Remove existing guide card if any (to prevent duplicates on re-render)
         const oldCard = document.getElementById('guide-card-' + moduleKey);
         if (oldCard) oldCard.remove();
+        
+        // Remove the top-level demo card if it exists (reverting previous change)
+        const oldDemoCard = document.getElementById('demo-card-' + moduleKey);
+        if (oldDemoCard) oldDemoCard.remove();
 
         const guideCard = document.createElement('div');
         guideCard.className = 'setup-guide-card';
@@ -3268,12 +3272,10 @@
         let html = '';
         
         // --- CONTENT LAYOUT ---
-        // We remove the redundant title and put See Demo on same height as content
-        html += `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-top:12px;">`;
-        html += `<div style="flex:1;">`; // Content wrapper
+        html += `<div style="margin-top:12px;">`;
         
         if (guideData.subtitle) {
-          html += `<div style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">${guideData.subtitle}</div>`;
+          html += `<div style="font-size:11px; color:#fff; margin-bottom:12px;">${guideData.subtitle}</div>`;
         }
 
         html += `<div class="guide-columns">`;
@@ -3284,27 +3286,17 @@
           
           html += `<div class="guide-column">`;
           
-          // Column Header with Demo Button
-          html += `<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">`;
-          html += `<div>`; // Title/Subtitle wrapper
-          if (col.title && col.type !== 'recommended') {
-            html += `<div style="font-size:12px; font-weight:700; color:var(--text-color); margin-bottom:2px;">${col.title}</div>`;
+          // Column title/subtitle
+          if ((col.title && col.type !== 'recommended') || col.subtitle) {
+            html += `<div style="margin-bottom:12px;">`;
+            if (col.title && col.type !== 'recommended') {
+              html += `<div style="font-size:12px; font-weight:700; color:var(--text-color); margin-bottom:2px;">${col.title}</div>`;
+            }
+            if (col.subtitle) {
+              html += `<div style="font-size:10px; color:var(--text-muted); line-height:1.4;">${col.subtitle}</div>`;
+            }
+            html += `</div>`;
           }
-          if (col.subtitle) {
-            html += `<div style="font-size:10px; color:var(--text-muted); line-height:1.4;">${col.subtitle}</div>`;
-          }
-          html += `</div>`;
-          
-          if (col.demoUrl) {
-            html += `
-              <div class="demo-btn-container" style="flex-shrink:0; margin-left:10px;">
-                <button class="glass-btn small-glass-btn" onclick="window.open('${col.demoUrl}')">
-                  See demo
-                </button>
-              </div>
-            `;
-          }
-          html += `</div>`;
           
           if (col.type === 'recommended') {
             html += `
@@ -3324,7 +3316,9 @@
           } else {
             html += `<div class="guide-steps">`;
             col.steps.forEach(step => {
-              if (step.bullet) {
+              if (step.plain) {
+                html += `<div style="font-size:11px; color:var(--text-muted); line-height:1.6; margin-bottom:10px;">${step.text}</div>`;
+              } else if (step.bullet) {
                 html += `<div class="guide-bullet" style="font-size:11px;">${step.text}</div>`;
               } else {
                 html += `
@@ -3337,24 +3331,23 @@
             });
             html += `</div>`;
           }
+
+          // "See Demo" button at the very bottom of the section (Standard Layout)
+          if (col.demoUrl) {
+            html += `
+              <div class="demo-btn-container" style="margin-top:14px; justify-content:flex-start;">
+                <button class="glass-btn small-glass-btn" onclick="window.open('${col.demoUrl}')">
+                  See Demo
+                </button>
+              </div>
+            `;
+          }
+
           html += `</div>`; // end column
         });
         
         html += `</div>`; // end guide-columns
-        html += `</div>`; // end flex content wrapper
-        
-        // Legacy top-level demo support (optional)
-        if (guideData.demoUrl && !guideData.columns.some(c => c.demoUrl)) {
-          html += `
-            <div class="demo-btn-container" style="margin-left:20px; flex-shrink:0;">
-              <button class="glass-btn small-glass-btn" onclick="window.open('${guideData.demoUrl}')">
-                See demo
-              </button>
-            </div>
-          `;
-        }
-        
-        html += `</div>`; // end horizontal flex
+        html += `</div>`; // end content container
         
         content.innerHTML = html;
         guideCard.appendChild(header);
