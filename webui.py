@@ -49,7 +49,8 @@ def run_orpheus(args: list[str], job_id: str):
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
+            env={**os.environ, "ORPHEUS_GUI": "1"}
         )
         active_procs[job_id] = proc
 
@@ -64,14 +65,7 @@ def run_orpheus(args: list[str], job_id: str):
             line = line.strip('\r\n').strip()
             if not line: continue
 
-            # TIDAL auto-login handling: Detect prompt and send "1" (TV)
-            if "login type: (1) TV, (2) Mobile" in line:
-                try:
-                    proc.stdin.write("1\n")
-                    proc.stdin.flush()
-                    job["log"].append("TIDAL: Automatically selected (1) TV mode...")
-                except:
-                    pass
+
 
             # Whitelist search result lines: if it has metadata tags, it's NOT a logo
             if '|PLATFORM|' in line and '|ID|' in line:

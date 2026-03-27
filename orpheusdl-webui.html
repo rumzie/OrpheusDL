@@ -236,9 +236,9 @@
     /* ── PAGE HEADER ── */
     .page-eyebrow {
       font-family: "Inter", sans-serif;
-      font-size: 11px;
+      font-size: 18px;
       font-weight: 800;
-      letter-spacing: 2px;
+      letter-spacing: 0.5px;
       color: #fff;
       margin-bottom: 12px;
     }
@@ -696,12 +696,21 @@
     }
 
     .setting-label {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text-color);
       display: inline-flex;
       align-items: center;
       gap: 6px;
+    }
+
+    .setting-row input[type="text"],
+    .setting-row input[type="password"],
+    .setting-row select,
+    .setting-row textarea {
+      font-size: 11px !important;
+      padding: 8px 12px !important;
+      border-radius: 8px !important;
     }
 
     .help-icon {
@@ -726,6 +735,43 @@
       background: rgba(74, 158, 255, 0.15);
       border-color: var(--accent-1);
       color: #fff;
+    }
+
+    .help-icon.active {
+      background: var(--accent-1) !important;
+      border-color: var(--accent-1) !important;
+      color: #fff !important;
+      box-shadow: 0 0 10px var(--accent-1);
+    }
+
+    /* ── CUSTOM TOOLTIP ── */
+    #custom-tooltip {
+      position: fixed;
+      z-index: 10000;
+      background: rgba(15, 15, 20, 0.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--accent-1);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      max-width: 260px;
+      text-align: center;
+      line-height: 1.5;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      display: none;
+    }
+
+    #custom-tooltip.visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .setting-desc {
@@ -1649,18 +1695,67 @@
 
   <script>
     // Global Help Tooltip Handler
+    let currentTooltipIcon = null;
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('custom-tooltip');
+      if (tooltip) {
+        tooltip.classList.remove('visible');
+        setTimeout(() => { if (tooltip && !tooltip.classList.contains('visible')) tooltip.style.display = 'none'; }, 200);
+      }
+      if (currentTooltipIcon) {
+        currentTooltipIcon.classList.remove('active');
+        currentTooltipIcon = null;
+      }
+    }
+
+    function showTooltip(icon, text) {
+      const tooltip = document.getElementById('custom-tooltip');
+      if (!tooltip || !text) return;
+
+      if (currentTooltipIcon) hideTooltip();
+
+      currentTooltipIcon = icon;
+      icon.classList.add('active');
+
+      tooltip.textContent = text;
+      tooltip.style.display = 'block';
+      
+      requestAnimationFrame(() => {
+        const rect = icon.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+        let top = rect.top - tooltipRect.height - 12;
+
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
+        if (top < 10) top = rect.bottom + 12;
+
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+        tooltip.classList.add('visible');
+      });
+    }
+
     document.addEventListener('click', (e) => {
       const helpIcon = e.target.closest('.help-icon');
       if (helpIcon) {
         e.stopPropagation();
         const label = helpIcon.closest('.setting-label');
-        if (label && label.title) {
-          alert(label.title);
-        } else if (helpIcon.title && helpIcon.title !== 'Click for info') {
-          alert(helpIcon.title);
+        const text = label?.title || helpIcon.title;
+        if (helpIcon === currentTooltipIcon) {
+          hideTooltip();
+        } else {
+          showTooltip(helpIcon, text);
         }
+      } else {
+        hideTooltip();
       }
     });
+
+    window.addEventListener('scroll', hideTooltip, { passive: true });
+    window.addEventListener('resize', hideTooltip, { passive: true });
 
     // Active Jobs Tracking
     let activeJobId = null;
@@ -2631,17 +2726,17 @@
       position: fixed; inset: 0; z-index: 1000;
       background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
       display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      padding: 10px;
       `;
         modal.innerHTML = `
-        <div class="glass-card" style="width: 100%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column;">
-            <div class="card-label" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="glass-card" style="width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; padding:14px;">
+            <div class="card-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               Browse Folders
               <button class="ghost-icon-btn" onclick="closeFolderPicker()" style="width:24px; height:24px;">✕</button>
             </div>
-            <div id="picker-path" style="font-size:11px; color:var(--accent-1); margin-bottom:12px; word-break:break-all; font-family:'Roboto Mono',monospace;"></div>
-            <div id="picker-list" style="flex:1; overflow-y:auto; margin-bottom:14px; min-height:200px;"></div>
-            <div style="display:flex; gap:10px;">
+            <div id="picker-path" style="font-size:11px; color:var(--accent-1); margin-bottom:6px; word-break:break-all; font-family:'Roboto Mono',monospace;"></div>
+            <div id="picker-list" style="flex:1; overflow-y:auto; margin-bottom:8px; min-height:200px;"></div>
+            <div style="display:flex; gap:8px;">
               <button class="glass-btn primary" style="flex:1" onclick="selectCurrentFolder()">Select</button>
               <button class="glass-btn" style="flex:1" onclick="closeFolderPicker()">Cancel</button>
             </div>
@@ -2673,7 +2768,7 @@
         pickerCurrentPath = data.current_path;
         pathEl.textContent = pickerCurrentPath;
 
-        list.innerHTML = data.items.map(item => `
+        list.innerHTML = data.items.filter(item => item.is_dir).map(item => `
         <div class="result-item" onclick="loadFolder('${item.path.replace(/\\/g, '/')}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; color:var(--accent-1);">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
@@ -2712,17 +2807,17 @@
           position: fixed; inset: 0; z-index: 1000;
           background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
           display: flex; align-items: center; justify-content: center;
-          padding: 20px;
+          padding: 10px;
         `;
         modal.innerHTML = `
-          <div class="glass-card" style="width: 100%; max-width: 600px; height: 80vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1);">
-            <div class="card-label blue" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <span>DOWNLOAD BROWSER</span>
+          <div class="glass-card" style="width: 100%; max-width: 680px; height: 85vh; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.1); padding:14px;">
+            <div class="card-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span>DOWNLOADED FILES</span>
               <button class="ghost-icon-btn" onclick="closeDownloadBrowser()" style="width:24px; height:24px;">✕</button>
             </div>
-            <div id="browser-path" style="font-size:11px; color:var(--accent-1); margin-bottom:12px; word-break:break-all; font-family:'Roboto Mono',monospace; background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:6px;"></div>
-            <div id="browser-list" style="flex:1; overflow-y:auto; margin-bottom:14px; padding-right:4px;"></div>
-            <div style="display:flex; gap:10px;">
+            <div id="browser-path" style="font-size:11px; color:var(--accent-1); margin-bottom:6px; word-break:break-all; font-family:'Roboto Mono',monospace; background:rgba(0,0,0,0.2); padding:4px 8px; border-radius:6px;"></div>
+            <div id="browser-list" style="flex:1; overflow-y:auto; margin-bottom:8px; padding-right:4px;"></div>
+            <div style="display:flex; gap:8px;">
               <button class="glass-btn primary" style="flex:1" onclick="closeDownloadBrowser()">Close</button>
             </div>
           </div>
@@ -2761,13 +2856,13 @@
         // Folders
         folders.forEach(item => {
           html += `
-            <div class="result-item" onclick="loadBrowserContents('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:4px; padding:10px;">
-              <div style="width:32px; height:32px; background:rgba(74,158,255,0.1); border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:12px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2">
+            <div class="result-item" onclick="loadBrowserContents('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:2px; padding:6px 8px;">
+              <div style="width:26px; height:26px; background:rgba(74,158,255,0.1); border-radius:5px; display:flex; align-items:center; justify-content:center; margin-right:8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
-              <div class="result-title" style="font-size:13px;">${item.name}</div>
+              <div class="result-title" style="font-size:11px;">${item.name}</div>
             </div>
           `;
         });
@@ -2778,21 +2873,18 @@
         files.forEach(item => {
           const sizeMB = (item.size / (1024 * 1024)).toFixed(1);
           html += `
-            <div class="result-item" onclick="openFile('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:4px; padding:10px;">
-              <div style="width:32px; height:32px; background:rgba(255,255,255,0.05); border-radius:6px; display:flex; align-items:center; justify-content:center; margin-right:12px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2">
+            <div class="result-item" onclick="openFile('${item.path.replace(/\\/g, '/')}')" style="margin-bottom:2px; padding:6px 8px;">
+              <div style="width:26px; height:26px; background:rgba(255,255,255,0.05); border-radius:5px; display:flex; align-items:center; justify-content:center; margin-right:8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2">
                   <path d="M9 18V5l12-2v13"/>
                   <circle cx="6" cy="18" r="3"/>
                   <circle cx="18" cy="16" r="3"/>
                 </svg>
               </div>
               <div class="result-info">
-                <div class="result-title" style="font-size:13px;">${item.name}</div>
+                <div class="result-title" style="font-size:11px;">${item.name}</div>
                 <div style="font-size:10px; color:var(--text-muted);">${sizeMB} MB</div>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-1)" stroke-width="2" style="margin-left:auto; opacity:0.6;">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
             </div>
           `;
         });
@@ -2811,6 +2903,7 @@
       window.open('/api/view?path=' + encodeURIComponent(path), '_blank');
     }
   </script>
+  <div id="custom-tooltip"></div>
 </body>
 
 </html>
