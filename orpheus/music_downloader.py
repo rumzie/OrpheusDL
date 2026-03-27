@@ -387,7 +387,7 @@ class Downloader:
                 'gray_text': GRAY,                  # Gray for general status text
                 'yellow_text': YELLOW,              # Yellow for "(already exists)" text
                 'red_text': RED,                    # Red for "(failed)" text
-                'reset': RESET
+                'reset': f'{RESET}'
             }
         else:
             # Use Unicode symbols for Unix/macOS terminals (better Unicode support)
@@ -399,7 +399,7 @@ class Downloader:
                 'gray_text': GRAY,                  # Gray for general status text
                 'yellow_text': YELLOW,              # Yellow for "(already exists)" text
                 'red_text': RED,                    # Red for "(failed)" text
-                'reset': RESET
+                'reset': f'{RESET}'
             }
 
     def create_temp_filename(self):
@@ -722,14 +722,14 @@ class Downloader:
             else:
                 time_str = f"{seconds:.1f}s"
             
-            # Show performance summary in order: Download speed, Download time
-            # Only show speed metrics if data was actually downloaded
-            if total_mb > 0:
-                original_print(f"Download speed: {overall_speed_mbps:.0f} Mbps", drop_level=performance_summary_indent)
-                original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
-            else:
-                # Don't assume tracks already existed - they might have failed
-                original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
+            # performance metrics removed for cleaner log output as requested
+            pass
+            # if total_mb > 0:
+            #     original_print(f"Download speed: {overall_speed_mbps:.0f} Mbps", drop_level=performance_summary_indent)
+            #     original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
+            # else:
+            #     # Don't assume tracks already existed - they might have failed
+            #     original_print(f"Download time: {time_str}", drop_level=performance_summary_indent)
         
         # Convert results to expected format
         for index, download_result, error in results_temp:
