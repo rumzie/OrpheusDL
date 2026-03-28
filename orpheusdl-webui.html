@@ -2915,9 +2915,7 @@
         if (logEl) logEl.textContent = '';
 
         if (tTitle) {
-          tTitle.textContent = selectedItems.length > 1
-            ? `${branding.name} (${i + 1}/${selectedItems.length})`
-            : branding.name;
+          tTitle.textContent = branding.name;
           tTitle.style.color = branding.color;
         }
         if (tMeta) tMeta.textContent = quality ? `${quality} · from search` : 'Search result';
