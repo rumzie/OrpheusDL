@@ -51,8 +51,8 @@
     }
 
     .dl-log {
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 12px;
       font-family: "Roboto Mono", monospace;
       font-size: 11px;
@@ -64,27 +64,64 @@
       word-break: break-all;
       line-height: 1.5;
     }
+
     .dl-log a {
       color: var(--log-link);
       text-decoration: underline;
       font-weight: 500;
     }
+
     .dl-log a:hover {
       color: var(--log-link-hover);
       text-decoration: none;
     }
 
     /* Log Formatting Utility Classes */
-    .log-white { color: var(--log-white); font-weight: 500; }
-    .log-secondary { color: var(--log-secondary); }
-    .log-gray { color: var(--log-gray); }
-    .log-warning { color: var(--log-warning); }
-    .log-error { color: var(--log-error); font-weight: 600; }
-    .log-success { color: var(--log-success); font-weight: 600; }
-    .log-label { color: var(--log-secondary); font-weight: 400; }
-    .log-value { color: var(--log-white); font-weight: 500; }
-    .log-bold { font-weight: 700; }
-    .log-icon { font-family: "Inter", sans-serif; margin-right: 4px; }
+    .log-white {
+      color: var(--log-white);
+      font-weight: 500;
+    }
+
+    .log-secondary {
+      color: var(--log-secondary);
+    }
+
+    .log-gray {
+      color: var(--log-gray);
+    }
+
+    .log-warning {
+      color: var(--log-warning);
+    }
+
+    .log-error {
+      color: var(--log-error);
+      font-weight: 600;
+    }
+
+    .log-success {
+      color: var(--log-success);
+      font-weight: 600;
+    }
+
+    .log-label {
+      color: var(--log-secondary);
+      font-weight: 400;
+    }
+
+    .log-value {
+      color: var(--log-white);
+      font-weight: 500;
+    }
+
+    .log-bold {
+      font-weight: 700;
+    }
+
+    .log-icon {
+      font-family: "Inter", sans-serif;
+      margin-right: 4px;
+    }
 
     ::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.2);
@@ -479,8 +516,10 @@
     .result-item {
       display: flex;
       align-items: center;
-      gap: 6px; /* Reduced from 10px */
-      padding: 8px 4px; /* Reduced from 12px 8px */
+      gap: 6px;
+      /* Reduced from 10px */
+      padding: 8px 4px;
+      /* Reduced from 12px 8px */
       border-radius: 12px;
       cursor: pointer;
       transition: var(--transition);
@@ -507,7 +546,8 @@
       border: 1px solid var(--card-border);
       border-radius: 20px;
       margin-top: 14px;
-      margin-bottom: 24px; /* Space before Save button */
+      margin-bottom: 24px;
+      /* Space before Save button */
       padding: 0;
       overflow: hidden;
       transition: var(--transition);
@@ -549,8 +589,15 @@
     }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .guide-header {
@@ -710,7 +757,8 @@
       font-family: "Roboto Mono", monospace;
       font-size: 11px;
       color: var(--text-muted);
-      min-width: 14px; /* Reduced from 20px */
+      min-width: 14px;
+      /* Reduced from 20px */
       text-align: right;
       opacity: 0.6;
       margin-right: 4px;
@@ -987,7 +1035,7 @@
       max-width: 260px;
       text-align: center;
       line-height: 1.5;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
       pointer-events: none;
       opacity: 0;
       transform: translateY(10px);
@@ -1421,7 +1469,9 @@
                 track details</div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <button id="dl-stop-btn" class="ghost-btn" style="display:none; color:#f87171; border-color:rgba(248,113,113,0.3); padding:4px 8px; font-size:10px; height:22px;" onclick="stopJob(activeJobId)">Stop</button>
+              <button id="dl-stop-btn" class="ghost-btn"
+                style="display:none; color:#f87171; border-color:rgba(248,113,113,0.3); padding:4px 8px; font-size:10px; height:22px;"
+                onclick="stopJob(activeJobId)">Stop</button>
               <span class="badge badge-blue" id="dl-status">Downloading</span>
             </div>
           </div>
@@ -1486,7 +1536,9 @@
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
-          <button class="glass-btn primary" onclick="doSearch()" style="padding:0; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:50%;" title="Search">
+          <button class="glass-btn primary" onclick="doSearch()"
+            style="padding:0; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:50%;"
+            title="Search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -1542,7 +1594,9 @@
         <div class="glass-card">
           <div class="card-label blue">GENERAL</div>
           <div class="setting-row">
-            <div class="setting-label" title="The main folder where all downloads will be saved.">Output Path <div class="help-icon">?</div></div>
+            <div class="setting-label" title="The main folder where all downloads will be saved.">Output Path <div
+                class="help-icon">?</div>
+            </div>
             <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;min-width:200px;">
               <input type="text" id="global-download_path" data-path="global.general.download_path"
                 style="flex:1; min-width:0;" />
@@ -1569,7 +1623,9 @@
             </div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Select the desired audio quality preference.">Quality <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Select the desired audio quality preference.">Quality <div
+                class="help-icon">?</div>
+            </div>
             <select id="global-download_quality" data-path="global.general.download_quality" style="width:180px;">
               <option value="hifi">hifi</option>
               <option value="lossless">lossless</option>
@@ -1578,12 +1634,17 @@
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Maximum number of results to display in the Search tab.">Search Limit <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Maximum number of results to display in the Search tab.">Search Limit <div
+                class="help-icon">?</div>
+            </div>
             <input type="text" id="global-search_limit" data-path="global.general.search_limit"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Number of tracks to download simultaneously (1-10).&#10;&#10;Recommended values:&#10;• 1-3: Slower systems, limited bandwidth&#10;• 4-6: Most systems (balanced speed/stability)&#10;• 7-10: High-end systems, fast internet.">Concurrent Downloads <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Number of tracks to download simultaneously (1-10).&#10;&#10;Recommended values:&#10;• 1-3: Slower systems, limited bandwidth&#10;• 4-6: Most systems (balanced speed/stability)&#10;• 7-10: High-end systems, fast internet.">
+              Concurrent Downloads <div class="help-icon">?</div>
+            </div>
             <div style="display:flex;align-items:center;gap:10px;">
               <input type="range" id="global-concurrent_downloads" data-path="global.general.concurrent_downloads"
                 min="1" max="10" step="1" style="width:140px;"
@@ -1596,12 +1657,16 @@
         <div class="glass-card">
           <div class="card-label blue">CODECS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Enable potentially proprietary codecs like MQA (if supported by module).">Proprietary Codecs <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Enable potentially proprietary codecs like MQA (if supported by module).">
+              Proprietary Codecs <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-proprietary_codecs" data-path="global.codecs.proprietary_codecs"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Enable spatial audio codecs like Dolby Atmos (if supported by module).">Spatial Codecs <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Enable spatial audio codecs like Dolby Atmos (if supported by module).">
+              Spatial Codecs <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-spatial_codecs" data-path="global.codecs.spatial_codecs"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1610,17 +1675,23 @@
         <div class="glass-card">
           <div class="card-label blue">MODULE DEFAULTS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Default module to use for fetching lyrics.">Lyrics Module <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Default module to use for fetching lyrics.">Lyrics Module <div
+                class="help-icon">?</div>
+            </div>
             <input type="text" id="global-module_lyrics" data-path="global.module_defaults.lyrics"
               style="width:160px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Default module to use for fetching cover art.">Covers Module <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Default module to use for fetching cover art.">Covers Module <div
+                class="help-icon">?</div>
+            </div>
             <input type="text" id="global-module_covers" data-path="global.module_defaults.covers"
               style="width:160px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Default module to use for fetching track credits.">Credits Module <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Default module to use for fetching track credits.">Credits Module <div
+                class="help-icon">?</div>
+            </div>
             <input type="text" id="global-module_credits" data-path="global.module_defaults.credits"
               style="width:160px;" />
           </div>
@@ -1629,17 +1700,23 @@
         <div class="glass-card">
           <div class="card-label blue">LYRICS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed standard (unsynced) lyrics into the audio file.">Embed Lyrics <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Embed standard (unsynced) lyrics into the audio file.">Embed Lyrics <div
+                class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-embed_lyrics" data-path="global.lyrics.embed_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed synced (LRC) lyrics into the audio file (requires embed_lyrics).">Embed Synced Lyrics <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Embed synced (LRC) lyrics into the audio file (requires embed_lyrics).">
+              Embed Synced Lyrics <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-embed_synced_lyrics" data-path="global.lyrics.embed_synced_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Save synced lyrics as a separate .lrc file alongside the track.">Save Synced Lyrics <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Save synced lyrics as a separate .lrc file alongside the track.">Save
+              Synced Lyrics <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-save_synced_lyrics" data-path="global.lyrics.save_synced_lyrics"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1648,12 +1725,16 @@
         <div class="glass-card">
           <div class="card-label blue">COVERS</div>
           <div class="setting-row">
-            <div class="setting-label" title="Embed the main cover art into the audio file.">Embed Cover <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Embed the main cover art into the audio file.">Embed Cover <div
+                class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-embed_cover" data-path="global.covers.embed_cover"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Compression level for embedded/saved main cover art.">Main Compression <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Compression level for embedded/saved main cover art.">Main Compression
+              <div class="help-icon">?</div>
+            </div>
             <select id="global-main_compression" data-path="global.covers.main_compression" style="width:160px;">
               <option value="high">high</option>
               <option value="low">low</option>
@@ -1661,37 +1742,50 @@
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Maximum resolution (pixels) for the main cover art.">Main Resolution <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Maximum resolution (pixels) for the main cover art.">Main Resolution <div
+                class="help-icon">?</div>
+            </div>
             <input type="text" id="global-main_resolution" data-path="global.covers.main_resolution"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Save cover art from a third-party module (if configured).">Save External <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Save cover art from a third-party module (if configured).">Save External
+              <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-save_external" data-path="global.covers.save_external"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Format for the saved external cover art.">External Format <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Format for the saved external cover art.">External Format <div
+                class="help-icon">?</div>
+            </div>
             <select id="global-external_format" data-path="global.covers.external_format" style="width:160px;">
               <option value="png">png</option>
               <option value="jpg">jpg</option>
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Compression level for the saved external cover art.">External Compression <div class="help-icon">?</div></div>
-            <select id="global-external_compression" data-path="global.covers.external_compression" style="width:160px;">
+            <div class="setting-label" title="Compression level for the saved external cover art.">External Compression
+              <div class="help-icon">?</div>
+            </div>
+            <select id="global-external_compression" data-path="global.covers.external_compression"
+              style="width:160px;">
               <option value="low">low</option>
               <option value="high">high</option>
               <option value="none">none</option>
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Maximum resolution (pixels) for the saved external cover art.">External Resolution <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Maximum resolution (pixels) for the saved external cover art.">External
+              Resolution <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-external_resolution" data-path="global.covers.external_resolution"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Save animated cover art (GIF/MP4) if available.">Save Animated Cover <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Save animated cover art (GIF/MP4) if available.">Save Animated Cover <div
+                class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-save_animated_cover" data-path="global.covers.save_animated_cover"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1700,19 +1794,25 @@
         <div class="glass-card">
           <div class="card-label blue">PLAYLIST</div>
           <div class="setting-row">
-            <div class="setting-label" title="Create an M3U playlist file for playlist downloads.">Save M3U <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Create an M3U playlist file for playlist downloads.">Save M3U <div
+                class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-save_m3u" data-path="global.playlist.save_m3u"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Select 'relative' or 'absolute' paths in M3U file.">Paths M3U <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Select 'relative' or 'absolute' paths in M3U file.">Paths M3U <div
+                class="help-icon">?</div>
+            </div>
             <select id="global-paths_m3u" data-path="global.playlist.paths_m3u" style="width:160px;">
               <option value="absolute">absolute</option>
               <option value="relative">relative</option>
             </select>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Include extended info like track length in M3U file.">Extended M3U <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Include extended info like track length in M3U file.">Extended M3U <div
+                class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-extended_m3u" data-path="global.playlist.extended_m3u"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1721,12 +1821,17 @@
         <div class="glass-card">
           <div class="card-label blue">ARTIST DOWNLOADING</div>
           <div class="setting-row">
-            <div class="setting-label" title="Include albums where the artist is credited but not the main artist.">Return Credited Albums <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Include albums where the artist is credited but not the main artist.">
+              Return Credited Albums <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-return_credited_albums"
               data-path="global.artist_downloading.return_credited_albums" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="When downloading artists, skip tracks that are part of albums already downloaded.">Separate Tracks Skip Downloaded <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="When downloading artists, skip tracks that are part of albums already downloaded.">Separate Tracks
+              Skip Downloaded <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-separate_tracks_skip_downloaded"
               data-path="global.artist_downloading.separate_tracks_skip_downloaded"
               onclick="this.classList.toggle('on')"></div>
@@ -1736,32 +1841,48 @@
         <div class="glass-card">
           <div class="card-label blue">FORMATTING</div>
           <div class="setting-row">
-            <div class="setting-label" title="Folder structure for albums. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}&#10; {id}, {label}, {catalog_number}, {release_year}&#10; {upc}, {explicit}, {quality}">Album Format <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Folder structure for albums. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}&#10; {id}, {label}, {catalog_number}, {release_year}&#10; {upc}, {explicit}, {quality}">
+              Album Format <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-album_format" data-path="global.formatting.album_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Folder structure for playlists. Variables:&#10; {creator}, {creator_id}&#10; {name}, {tracks}&#10; {release_year}, {explicit}">Playlist Format <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Folder structure for playlists. Variables:&#10; {creator}, {creator_id}&#10; {name}, {tracks}&#10; {release_year}, {explicit}">
+              Playlist Format <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-playlist_format" data-path="global.formatting.playlist_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Filename format for tracks. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}, {album}&#10; {track_number}, {total_tracks}, {disc_number}, {total_discs}&#10; {id}, {album_id}, {label}, {catalog_number}, {isrc}, {release_year}, {explicit}, {quality}">Track Filename Format <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Filename format for tracks. Variables:&#10; {artist}, {artist_id}, {artist_initials}, {album_artist}, {name}, {album}&#10; {track_number}, {total_tracks}, {disc_number}, {total_discs}&#10; {id}, {album_id}, {label}, {catalog_number}, {isrc}, {release_year}, {explicit}, {quality}">
+              Track Filename Format <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-track_filename_format" data-path="global.formatting.track_filename_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Full path format (folder + filename) for single tracks not part of an album download.&#10;Uses same variables as Track Filename Format.">Single Full Path Format <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Full path format (folder + filename) for single tracks not part of an album download.&#10;Uses same variables as Track Filename Format.">
+              Single Full Path Format <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-single_full_path_format" data-path="global.formatting.single_full_path_format"
               style="width:200px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Pads track/disc numbers with leading zeros (e.g., 01, 02).">Enable Zfill <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Pads track/disc numbers with leading zeros (e.g., 01, 02).">Enable Zfill
+              <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-enable_zfill" data-path="global.formatting.enable_zfill"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Use the album_format structure even for single track downloads.">Force Album Format <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Use the album_format structure even for single track downloads.">Force
+              Album Format <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-force_album_format" data-path="global.formatting.force_album_format"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1770,47 +1891,71 @@
         <div class="glass-card">
           <div class="card-label blue">ADVANCED</div>
           <div class="setting-row">
-            <div class="setting-label" title="Enable advanced login system (Use only if instructed by module documentation).">Advanced Login System <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Enable advanced login system (Use only if instructed by module documentation).">Advanced Login
+              System <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-advanced_login_system" data-path="global.advanced.advanced_login_system"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Skips downloading files, if a file with the target name already exists in the output directory.">Ignore Existing Files <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Skips downloading files, if a file with the target name already exists in the output directory.">
+              Ignore Existing Files <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-ignore_existing_files" data-path="global.advanced.ignore_existing_files"
               onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="When downloading albums, ignore tracks where the artist differs from the main album artist.">Ignore Different Artists <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="When downloading albums, ignore tracks where the artist differs from the main album artist.">Ignore
+              Different Artists <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-ignore_different_artists"
               data-path="global.advanced.ignore_different_artists" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Keep the original file after successful codec conversion.">Conversion Keep Original <div class="help-icon">?</div></div>
-            <div class="toggle" id="global-conversion_keep_original" data-path="global.advanced.conversion_keep_original"
-              onclick="this.classList.toggle('on')"></div>
+            <div class="setting-label" title="Keep the original file after successful codec conversion.">Conversion Keep
+              Original <div class="help-icon">?</div>
+            </div>
+            <div class="toggle" id="global-conversion_keep_original"
+              data-path="global.advanced.conversion_keep_original" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Controls allowance to perform codec conversions that might result in quality loss or are not recommended.&#10;Examples:&#10;Lossy-to-Lossy&#10;Lossless-to-Lossy (if not preferred)&#10;Unnecessary Lossless-to-Lossless">Enable Undesirable Conversions <div class="help-icon">?</div></div>
-            <div class="toggle" id="global-enable_undesirable_conversions" data-path="global.advanced.enable_undesirable_conversions"
-              onclick="this.classList.toggle('on')"></div>
+            <div class="setting-label"
+              title="Controls allowance to perform codec conversions that might result in quality loss or are not recommended.&#10;Examples:&#10;Lossy-to-Lossy&#10;Lossless-to-Lossy (if not preferred)&#10;Unnecessary Lossless-to-Lossless">
+              Enable Undesirable Conversions <div class="help-icon">?</div>
+            </div>
+            <div class="toggle" id="global-enable_undesirable_conversions"
+              data-path="global.advanced.enable_undesirable_conversions" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Prevents from checking if subscription for music service you are trying to download from is active.">Disable Subscription Checks <div class="help-icon">?</div></div>
-            <div class="toggle" id="global-disable_subscription_checks" data-path="global.advanced.disable_subscription_checks"
-              onclick="this.classList.toggle('on')"></div>
+            <div class="setting-label"
+              title="Prevents from checking if subscription for music service you are trying to download from is active.">
+              Disable Subscription Checks <div class="help-icon">?</div>
+            </div>
+            <div class="toggle" id="global-disable_subscription_checks"
+              data-path="global.advanced.disable_subscription_checks" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Full path to the ffmpeg executable &#10;If set to just 'ffmpeg', it's assumed to be in the system PATH.&#10;This is used for codec conversions.">FFmpeg Path <div class="help-icon">?</div></div>
-            <input type="text" id="global-ffmpeg_path" data-path="global.advanced.ffmpeg_path"
-              style="width:180px;" />
+            <div class="setting-label"
+              title="Full path to the ffmpeg executable &#10;If set to just 'ffmpeg', it's assumed to be in the system PATH.&#10;This is used for codec conversions.">
+              FFmpeg Path <div class="help-icon">?</div>
+            </div>
+            <input type="text" id="global-ffmpeg_path" data-path="global.advanced.ffmpeg_path" style="width:180px;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Tolerance for accepting covers with slightly different sizes (0-100).">Cover Variance Threshold <div class="help-icon">?</div></div>
+            <div class="setting-label" title="Tolerance for accepting covers with slightly different sizes (0-100).">
+              Cover Variance Threshold <div class="help-icon">?</div>
+            </div>
             <input type="text" id="global-cover_variance_threshold" data-path="global.advanced.cover_variance_threshold"
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row">
-            <div class="setting-label" title="Allows various detailed informational and diagnostic messages to be printed to the console.&#10;Intended for troubleshooting issues only.">Debug Mode <div class="help-icon">?</div></div>
+            <div class="setting-label"
+              title="Allows various detailed informational and diagnostic messages to be printed to the console.&#10;Intended for troubleshooting issues only.">
+              Debug Mode <div class="help-icon">?</div>
+            </div>
             <div class="toggle" id="global-debug_mode" data-path="global.advanced.debug_mode"
               onclick="this.classList.toggle('on')"></div>
           </div>
@@ -1947,11 +2092,11 @@
 
       tooltip.textContent = text;
       tooltip.style.display = 'block';
-      
+
       requestAnimationFrame(() => {
         const rect = icon.getBoundingClientRect();
         const tooltipRect = tooltip.getBoundingClientRect();
-        
+
         let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
         let top = rect.top - tooltipRect.height - 12;
 
@@ -2253,7 +2398,7 @@
       } else {
         navigator.clipboard.writeText(text);
       }
-      
+
       const original = btn.innerHTML;
       btn.innerHTML = '✓';
       btn.style.borderColor = 'var(--accent-1)';
@@ -2415,9 +2560,9 @@
       } else if (policy === 'youtube') {
         visible.add(2); visible.add(3); visible.add(4);
         defaultSelected = 2;
-        if (chips[2]) { chips[2].textContent = 'OPUS (lossless)'; chips[2].dataset.quality = 'lossless'; }
-        if (chips[3]) { chips[3].textContent = 'AAC (high)'; chips[3].dataset.quality = 'high'; }
-        if (chips[4]) { chips[4].textContent = 'MP3 (low)'; chips[4].dataset.quality = 'low'; }
+        if (chips[2]) { chips[2].textContent = 'OPUS'; chips[2].dataset.quality = 'lossless'; }
+        if (chips[3]) { chips[3].textContent = 'AAC'; chips[3].dataset.quality = 'high'; }
+        if (chips[4]) { chips[4].textContent = 'MP3'; chips[4].dataset.quality = 'low'; }
       } else {
         visible.add(0); visible.add(1); visible.add(2); visible.add(3); visible.add(4);
       }
@@ -2493,18 +2638,18 @@
     // ── LOG FORMATTING ──
     function formatLog(logArray) {
       if (!logArray || !logArray.length) return '';
-      
+
       // 1. Join and handle split URLs (specific to OrpheusDL output)
       let text = logArray.join('\n');
       text = text.replace(/URL:\s+([\s\S]+?)(?=\s+If the browser|$)/g, (match, p1) => {
-          return 'URL: ' + p1.replace(/\s+/g, '');
+        return 'URL: ' + p1.replace(/\s+/g, '');
       });
 
       // 2. Escape HTML & Split
-      const escapedLines = text.split('\n').map(line => 
-          line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      const escapedLines = text.split('\n').map(line =>
+        line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
       );
-      
+
       // 3. Process each line for styles
       const formattedLines = escapedLines.map(line => {
         const trimmed = line.trim();
@@ -2522,7 +2667,7 @@
         // --- Heading Lines (Equals) ---
         if (line.startsWith('===') && line.endsWith('===')) {
           const content = line.slice(3, -3).trim();
-          
+
           // Check for success/failure/skip indicators
           if (content.match(/^[+x&>]/) || content.toLowerCase().match(/(completed|failed|skipped)/)) {
             const isError = content.includes('x') || content.toLowerCase().includes('failed');
@@ -2530,7 +2675,7 @@
             let colorClass = 'log-success';
             if (isError) colorClass = 'log-error';
             else if (isWarning) colorClass = 'log-warning';
-            
+
             return `<span class="log-gray">===</span> <span class="${colorClass}">${content}</span> <span class="log-gray">===</span>`;
           }
 
@@ -2584,7 +2729,7 @@
           const index = trackMatch[1];
           const symbol = trackMatch[2];
           let fullTitle = trackMatch[3];
-          
+
           let title = fullTitle;
           let extra = '';
           let extraClass = 'log-secondary';
@@ -2594,7 +2739,7 @@
           if (statusMatch) {
             title = fullTitle.slice(0, -statusMatch[1].length).trim();
             extra = statusMatch[1];
-            
+
             const isWarning = extra.toLowerCase().includes('exists') || extra.toLowerCase().includes('skip');
             const isError = extra.toLowerCase().includes('failed') || extra.toLowerCase().includes('error');
             if (isWarning) extraClass = 'log-warning';
@@ -2623,12 +2768,12 @@
         if (line.toUpperCase().includes('ERROR') || line.toUpperCase().includes('FAILED')) {
           // If it's a "Track failed" but didn't match the trackRegex (e.g. malformed prefix)
           if (line.includes('/') && line.includes('(')) {
-             // Try to isolate the status label even in malformed lines
-             const labelMatch = line.match(/\((failed|error)\)$/i);
-             if (labelMatch) {
-                const pre = line.slice(0, -labelMatch[0].length);
-                return `<span class="log-secondary">${pre}</span> <span class="log-error">${labelMatch[0]}</span>`;
-             }
+            // Try to isolate the status label even in malformed lines
+            const labelMatch = line.match(/\((failed|error)\)$/i);
+            if (labelMatch) {
+              const pre = line.slice(0, -labelMatch[0].length);
+              return `<span class="log-secondary">${pre}</span> <span class="log-error">${labelMatch[0]}</span>`;
+            }
           }
           return `<span class="log-error"><span class="log-icon">⚠</span>${line}</span>`;
         }
@@ -2655,8 +2800,8 @@
       const iv = setInterval(async () => {
         // --- PREVENTION: Abandon this interval if a new job has started ---
         if (job_id !== activeJobId) {
-           clearInterval(iv);
-           return;
+          clearInterval(iv);
+          return;
         }
         try {
           const res = await fetch('/api/job/' + job_id);
@@ -2726,9 +2871,9 @@
           // Remember which results were selected before re-rendering
           const selectedIndices = Array.from(list.querySelectorAll('.result-item.selected'))
             .map(el => el.dataset.index);
-            
+
           renderSearchResults(job.log, list, job.status);
-          
+
           // Restore multiple selections after re-render
           selectedIndices.forEach(idx => {
             const restored = list.querySelector(`.result-item[data-index="${idx}"]`);
@@ -2859,16 +3004,16 @@
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
             ${r.chips.flatMap(c => {
-              const hasAtmos = c.includes('ATMOS');
-              const hasHiRes = c.includes('HI-RES');
-              if (hasAtmos || hasHiRes) {
-                const subchips = [];
-                if (hasAtmos) subchips.push(`<span class="result-chip"><img src="/platforms/dolby.svg" style="height:10px; margin-right:4px; vertical-align:middle;">ATMOS</span>`);
-                if (hasHiRes) subchips.push(`<span class="result-chip"><img src="/platforms/hires.svg" style="height:12px; margin-right:4px; vertical-align:middle;">HI-RES</span>`);
-                return subchips;
-              }
-              return `<span class="result-chip">${c}</span>`;
-            }).join('')}
+          const hasAtmos = c.includes('ATMOS');
+          const hasHiRes = c.includes('HI-RES');
+          if (hasAtmos || hasHiRes) {
+            const subchips = [];
+            if (hasAtmos) subchips.push(`<span class="result-chip"><img src="/platforms/dolby.svg" style="height:10px; margin-right:4px; vertical-align:middle;">ATMOS</span>`);
+            if (hasHiRes) subchips.push(`<span class="result-chip"><img src="/platforms/hires.svg" style="height:12px; margin-right:4px; vertical-align:middle;">HI-RES</span>`);
+            return subchips;
+          }
+          return `<span class="result-chip">${c}</span>`;
+        }).join('')}
           </div>
         </div>
       </div>
@@ -2948,7 +3093,7 @@
                 if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
                   clearInterval(iv);
                   document.getElementById('dl-stop-btn').style.display = 'none';
-                  
+
                   if (job.status === 'done') {
                     bar.style.width = '100%'; lbl.textContent = '100%';
                     status.textContent = selectedItems.length > 1 && i < selectedItems.length - 1
@@ -3156,11 +3301,11 @@
 
         const row = document.createElement('div');
         row.className = 'setting-row';
-        
+
         const labelWrapper = document.createElement('div');
         labelWrapper.className = 'setting-label';
         labelWrapper.textContent = humanizeSettingsKey(key);
-        
+
         row.appendChild(labelWrapper);
         const right = document.createElement('div');
         right.style = 'display:flex; align-items:center; gap:8px; flex:1; justify-content:flex-end;';
@@ -3215,20 +3360,20 @@
           const inp = document.createElement('input');
           const sensitiveKeys = ['password', 'secret', 'arl', 'token'];
           const isSensitive = sensitiveKeys.some(s => key.toLowerCase().includes(s));
-          
+
           inp.type = isSensitive ? 'password' : 'text';
           inp.value = value === null ? '' : String(value);
           inp.dataset.key = key;
           inp.dataset.type = 'string';
           inp.style.flex = '1';
           inp.style.minWidth = '0';
-          
+
           if (isSensitive) {
             inp.addEventListener('focus', () => { inp.type = 'text'; });
             inp.addEventListener('blur', () => { inp.type = 'password'; });
             inp.title = 'Click to reveal';
           }
-          
+
           right.appendChild(inp);
         }
         row.appendChild(right);
@@ -3238,12 +3383,12 @@
       // --- SETUP GUIDES RENDERING (Collapsible Card at Bottom) ---
       const guideData = moduleGuides[moduleKey.toLowerCase()];
       const tabContainer = document.getElementById('tab-' + moduleKey);
-      
+
       if (guideData && tabContainer) {
         // Remove existing guide card if any (to prevent duplicates on re-render)
         const oldCard = document.getElementById('guide-card-' + moduleKey);
         if (oldCard) oldCard.remove();
-        
+
         // Remove the top-level demo card if it exists (reverting previous change)
         const oldDemoCard = document.getElementById('demo-card-' + moduleKey);
         if (oldDemoCard) oldDemoCard.remove();
@@ -3251,39 +3396,39 @@
         const guideCard = document.createElement('div');
         guideCard.className = 'setup-guide-card';
         guideCard.id = 'guide-card-' + moduleKey;
-        
+
         const header = document.createElement('div');
         header.className = 'guide-collapsible-header';
         header.innerHTML = `
           <div class="card-label blue" style="margin-bottom:0; font-size:10px;">HOW TO SET UP</div>
           <div class="guide-arrow">▼</div>
         `;
-        
+
         const content = document.createElement('div');
         content.className = 'guide-collapse-content';
-        
+
         header.onclick = () => {
           content.classList.toggle('expanded');
           header.querySelector('.guide-arrow').classList.toggle('expanded');
         };
 
         let html = '';
-        
+
         // --- CONTENT LAYOUT ---
         html += `<div style="margin-top:12px;">`;
-        
+
         if (guideData.subtitle) {
           html += `<div style="font-size:11px; color:#fff; margin-bottom:12px;">${guideData.subtitle}</div>`;
         }
 
         html += `<div class="guide-columns">`;
-        
+
         guideData.columns.forEach(col => {
           // Check condition if present
           if (col.condition && !col.condition(settingsCache)) return;
-          
+
           html += `<div class="guide-column">`;
-          
+
           // Column title/subtitle
           if ((col.title && col.type !== 'recommended') || col.subtitle) {
             html += `<div style="margin-bottom:12px;">`;
@@ -3295,7 +3440,7 @@
             }
             html += `</div>`;
           }
-          
+
           if (col.type === 'recommended') {
             html += `
               <div style="font-size:12px; font-weight:700; color:var(--text-color); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
@@ -3343,10 +3488,10 @@
 
           html += `</div>`; // end column
         });
-        
+
         html += `</div>`; // end guide-columns
         html += `</div>`; // end content container
-        
+
         content.innerHTML = html;
         guideCard.appendChild(header);
         guideCard.appendChild(content);

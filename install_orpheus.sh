@@ -15,7 +15,7 @@ rm -rf OrpheusDL
 echo "[*] Installing base packages..."
 
 pkg update -y && pkg upgrade -y
-pkg install -y python git libjpeg-turbo ffmpeg
+pkg install -y python git libjpeg-turbo ffmpeg deno
 
 # -------------------------------
 # CLONE MAIN REPO
