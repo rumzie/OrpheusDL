@@ -2669,8 +2669,8 @@
         if (line.startsWith('===') && line.endsWith('===')) {
           const content = line.slice(3, -3).trim();
           // 1. Success/Completion/Warning/Error (Colored Content)
-          if (content.match(/[+✓▶⚠✗x]/) || content.toLowerCase().match(/(completed|successfully|success|failed|error|skipped|exists)/)) {
-            const isError = content.toLowerCase().match(/(failed|error)/) || content.includes('✗') || content.includes('x');
+          if (content.match(/[+✓▶⚠✗]/) || content.toLowerCase().match(/(completed|successfully|success|failed|error|skipped|exists)/)) {
+            const isError = content.toLowerCase().match(/(failed|error)/) || content.includes('✗');
             const isWarning = content.toLowerCase().includes('skipped') || content.includes('▶') || content.includes('⚠') || content.includes('&gt;');
             
             let colorClass = 'log-success';

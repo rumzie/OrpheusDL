@@ -37,11 +37,17 @@ def run_orpheus(args: list[str], job_id: str):
     job["status"] = "running"
     cmd = [sys.executable, "-u", str(ORPHEUS_PY)] + args + ["--progress"]
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    
+    # Progress Parsing Regexes
     progress_re = re.compile(r'(\d+)%')
-    # tqdm progress bar lines look like: "33%|####2  | 6.29M/19.2M [00:00<00:01, 8.31MB/s]"
     tqdm_re = re.compile(r'^\d+%\|')
-    # OrpheusDL "Track X/Y" or "Album X/Y" lines
-    track_re = re.compile(r'(?:Track|Album|Playlist item|Album|Playlist)\s+(\d+)/(\d+)', re.IGNORECASE)
+    track_re = re.compile(r'(?:Track|Playlist item|Playlist)?\s*(\d+)/(\d+)', re.IGNORECASE)
+    album_re = re.compile(r'Album\s*(\d+)/(\d+)', re.IGNORECASE)
+    total_albums_re = re.compile(r'Number of albums:\s*(\d+)', re.IGNORECASE)
+
+    # Multi-level progress tracking
+    global_curr = 1
+    global_total = 0
 
     try:
         proc = subprocess.Popen(
@@ -73,8 +79,6 @@ def run_orpheus(args: list[str], job_id: str):
             if "Download speed:" in line or "Download time:" in line:
                 continue
 
-
-
             # Whitelist search result lines: if it has metadata tags, it's NOT a logo
             if '|PLATFORM|' in line and '|ID|' in line:
                 pass
@@ -84,23 +88,48 @@ def run_orpheus(args: list[str], job_id: str):
                 if any(marker in line for marker in logo_markers):
                     continue
            
-            # Enhanced progress parsing
-            # 1. Track-based progress (X/Y) - gives overall job completion
-            tm = track_re.search(line)
-            if tm:
-                curr = int(tm.group(1))
-                total = int(tm.group(2))
-                if total > 0:
-                    prog = int((curr / total) * 100)
-                    if prog > jobs[job_id]["progress"]:
-                        jobs[job_id]["progress"] = prog
+            # --- Progress Parsing ---
             
-            # 2. Percentage-based progress (tqdm style: " 10%|#   |")
+            # 1. Detect Global Scope (Artist level)
+            tam = total_albums_re.search(line)
+            if tam:
+                global_total = int(tam.group(1))
+            
+            am = album_re.search(line)
+            if am:
+                global_curr = int(am.group(1))
+                global_total = int(am.group(2))
+
+            # 2. Level 2 (Track-based) progress
+            # Ignore pagination lines to prevent false hits like "(page 2/2)"
+            if "(page " not in line.lower():
+                tm = track_re.search(line)
+                if tm:
+                    curr = int(tm.group(1))
+                    total = int(tm.group(2))
+                    if total > 0:
+                        if global_total > 1:
+                            # Nested calculation: (Global completed index + Current Item Fraction) / Global Total
+                            # Ensure we don't go negative with global_curr
+                            gc = max(1, global_curr)
+                            prog = int(((gc - 1) + (curr / total)) / global_total * 100)
+                        else:
+                            # Standard single-level calculation (e.g., single Album/Playlist/Track)
+                            prog = int((curr / total) * 100)
+                        
+                        if prog >= 100: prog = 98  # Cap at 98% until fully 'Done'
+                        if prog > jobs[job_id]["progress"]:
+                            jobs[job_id]["progress"] = prog
+            
+            # 3. Percentage-based fallback (tqdm style)
             pm = progress_re.search(line)
             if pm:
                 val = int(pm.group(1))
-                # Only update if it doesn't cause the overall progress to flicker backwards
-                # (unless we're at a very low value meaning a new job sub-task)
+                # If we have a global scope, treat percentage as a fraction of the current global item
+                if global_total > 1:
+                    gc = max(1, global_curr)
+                    val = int(((gc - 1) + (val / 100)) / global_total * 100)
+                
                 if val > jobs[job_id]["progress"]:
                     jobs[job_id]["progress"] = val
             elif "Downloading" in line:
@@ -110,13 +139,11 @@ def run_orpheus(args: list[str], job_id: str):
                 jobs[job_id]["progress"] = 100
 
             # Skip tqdm progress bar lines from the visible log (they clutter output)
-            # Progress percentage is already extracted above.
             if tqdm_re.match(line):
                 continue
 
             jobs[job_id]["log"].append(line)
 
-            
         proc.wait()
         if proc.returncode == 0:
             jobs[job_id]["status"] = "done"
