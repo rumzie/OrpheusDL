@@ -2668,10 +2668,12 @@
         if (line.startsWith('===') && line.endsWith('===')) {
           const content = line.slice(3, -3).trim();
 
-          // Check for success/failure/skip indicators
-          if (content.match(/^[+x&>]/) || content.toLowerCase().match(/(completed|failed|skipped)/)) {
-            const isError = content.includes('x') || content.toLowerCase().includes('failed');
-            const isWarning = content.includes('&gt;') || content.includes('>') || content.toLowerCase().includes('skipped');
+          // 1. Success/Completion (Content Green)
+          // Look for ✓, +, or keywords
+          if (content.match(/[+✓]/) || content.toLowerCase().match(/(completed|successfully|success)/)) {
+            const isError = content.toLowerCase().match(/(failed|error)/) || content.includes('✗') || content.includes('x');
+            const isWarning = content.toLowerCase().includes('skipped') || content.includes('▶') || content.includes('⚠') || content.includes('&gt;');
+            
             let colorClass = 'log-success';
             if (isError) colorClass = 'log-error';
             else if (isWarning) colorClass = 'log-warning';
@@ -2679,7 +2681,8 @@
             return `<span class="log-gray">===</span> <span class="${colorClass}">${content}</span> <span class="log-gray">===</span>`;
           }
 
-          // Case: Downloading track/album/playlist/label {Name} ({ID})
+          // 2. Downloading Prefix (Type gray, Name white)
+          // Example: Downloading track This Is the Track name
           const downloadRegex = /^(Downloading (?:track|album|playlist|label)) (.+?)( \(.+\))?$/i;
           const dlMatch = content.match(downloadRegex);
           if (dlMatch) {
@@ -2689,6 +2692,7 @@
             return res;
           }
 
+          // 3. Fallback (Content White)
           return `<span class="log-gray">===</span> <span class="log-white">${content}</span> <span class="log-gray">===</span>`;
         }
 
@@ -2747,8 +2751,8 @@
           }
 
           let symbolClass = 'log-secondary';
-          if (symbol === '+') symbolClass = 'log-success';
-          else if (symbol === '&gt;') symbolClass = 'log-warning';
+          if (symbol === '+' || symbol === '✓') symbolClass = 'log-success';
+          else if (symbol === '&gt;' || symbol === '▶') symbolClass = 'log-warning';
           else if (symbol === 'x' || symbol === '✗') symbolClass = 'log-error';
           else if (symbol === '⚠') symbolClass = 'log-warning';
 
