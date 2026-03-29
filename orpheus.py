@@ -13,18 +13,6 @@ import argparse
 import re
 import json
 from urllib.parse import urlparse
-# 0. Robust dependency check before starting orpheus core
-try:
-    import requests
-    import urllib3
-    import flask
-except ImportError as e:
-    missing_module = str(e).split("'")[-2] if "'" in str(e) else str(e)
-    print(f"\n[FATAL ERROR] Missing dependency: {missing_module}")
-    print(f"Please install it using: pip install {missing_module}")
-    print("Or run: pip install -r requirements.txt")
-    sys.exit(1)
-
 from orpheus.core import *
 from orpheus.music_downloader import beauty_format_seconds
 from utils.models import QualityEnum
@@ -190,6 +178,7 @@ def main():
 
         media_types = '/'.join(i.name for i in DownloadTypeEnum)
 
+        media_to_download = {}
         if orpheus_mode == 'search' or orpheus_mode == 'luckysearch':
             if len(args.arguments) > 3:
                 modulename_input = args.arguments[1].lower()
@@ -211,7 +200,6 @@ def main():
                 
                 print("Searching... Please wait.")
                 global_index = 1
-                search_results_objects = []
                 for modulename in modules_to_search:
                     try:
                         module = orpheus.load_module(modulename)
@@ -239,7 +227,6 @@ def main():
                                 line += f' |IMAGE|{item.image_url}|'
                                 
                             print(line)
-                            search_results_objects.append((modulename, query_type, item))
                             global_index += 1
                             
                     except Exception as e:
@@ -257,32 +244,9 @@ def main():
                     print("\nNon-interactive mode: Exiting after search.")
                     exit(0)
 
-                if lucky_mode:
-                    selection_index = 0
-                else:
-                    selection_input = input('Selection: ').strip('\r\n ')
-                    try:
-                        selection_index = int(selection_input) - 1
-                    except ValueError:
-                        print("Invalid input. Please enter a number.")
-                        exit(1)
-
-                if 0 <= selection_index < len(search_results_objects):
-                    selected_modulename, selected_type, selected_item = search_results_objects[selection_index]
-                    
-                    # Prepare media_to_download
-                    media_to_download = {
-                        selected_modulename: [
-                            MediaIdentification(
-                                media_type=selected_type,
-                                media_id=selected_item.result_id,
-                                extra_kwargs=selected_item.extra_kwargs
-                            )
-                        ]
-                    }
-                else:
-                    print("Invalid selection.")
-                    exit(1)
+                selection_input = input('Selection: ').strip('\r\n ')
+                # ... rest of interactive logic if needed ...
+                # (Note: WebUI uses non-interactive mode only)
             else:
                 print(f'Search must be done as orpheus.py [search/luckysearch] [module] [{media_types}] [query]')
                 exit() # TODO: replace with InvalidInput
@@ -299,7 +263,7 @@ def main():
                         if args.song_codec: extra_kwargs['song_codec'] = args.song_codec
                         if args.use_wrapper: extra_kwargs['use_wrapper'] = args.use_wrapper
                     
-                    media_to_download = {modulename: [MediaIdentification(media_type=media_type, media_id=i, extra_kwargs=extra_kwargs) for i in args.arguments[3:]]}
+                    media_to_download.update({modulename: [MediaIdentification(media_type=media_type, media_id=i, extra_kwargs=extra_kwargs) for i in args.arguments[3:]]})
                 else:
                     modules = [i for i in orpheus.module_list if ModuleFlags.hidden not in orpheus.module_settings[i].flags]
                     raise Exception(f'Unknown module name "{modulename}". Must select from: {", ".join(modules)}') # TODO: replace with InvalidModuleError
@@ -307,12 +271,11 @@ def main():
                 print(f'Download must be done as orpheus.py [download] [module] [{media_types}] [media ID 1] [media ID 2] ...')
                 exit() # TODO: replace with InvalidInput
         else:  # if no specific modes are detected, parse as urls, but first try loading as a list of URLs
-            arguments = tuple(open(args.arguments[0], 'r', encoding='utf-8')) if len(args.arguments) == 1 and os.path.exists(args.arguments[0]) else args.arguments
+            arguments = tuple(open(args.arguments[0], 'r')) if len(args.arguments) == 1 and os.path.exists(args.arguments[0]) else args.arguments
             # Strip whitespace from lines read from file
             if isinstance(arguments, tuple) and len(args.arguments) == 1 and os.path.exists(args.arguments[0]):
                 arguments = tuple(line.strip() for line in arguments if line.strip()) # Also filter out empty lines
             
-            media_to_download = {}
             for link in arguments:
                 link = link.strip() # Ensure individual link is also stripped if coming from args
                 if not link: # Skip empty lines that might still be present if not from file
