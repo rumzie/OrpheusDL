@@ -201,6 +201,7 @@ def main():
                 
                 print("Searching... Please wait.")
                 global_index = 1
+                search_results = []
                 for modulename in modules_to_search:
                     try:
                         module = orpheus.load_module(modulename)
@@ -228,6 +229,7 @@ def main():
                                 line += f' |IMAGE|{item.image_url}|'
                                 
                             print(line)
+                            search_results.append((modulename, item))
                             global_index += 1
                             
                     except Exception as e:
@@ -246,8 +248,31 @@ def main():
                     exit(0)
 
                 selection_input = input('Selection: ').strip('\r\n ')
-                # ... rest of interactive logic if needed ...
-                # (Note: WebUI uses non-interactive mode only)
+                if not selection_input:
+                    exit()
+
+                if selection_input.lower() == 'all':
+                    selected_indices = range(len(search_results))
+                else:
+                    selected_indices = []
+                    for part in selection_input.split(','):
+                        part = part.strip()
+                        if '-' in part:
+                            try:
+                                start, end = part.split('-')
+                                selected_indices.extend(range(int(start) - 1, int(end)))
+                            except ValueError: continue
+                        else:
+                            try:
+                                selected_indices.append(int(part) - 1)
+                            except ValueError: continue
+
+                for idx in selected_indices:
+                    if 0 <= idx < len(search_results):
+                        modulename, item = search_results[idx]
+                        if modulename not in media_to_download:
+                            media_to_download[modulename] = []
+                        media_to_download[modulename].append(MediaIdentification(media_type=query_type, media_id=item.result_id, extra_kwargs=item.extra_kwargs))
             else:
                 print(f'Search must be done as orpheus.py [search/luckysearch] [module] [{media_types}] [query]')
                 exit() # TODO: replace with InvalidInput
