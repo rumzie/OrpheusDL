@@ -98,7 +98,6 @@ python orpheus.py
 # -------------------------------
 echo ""
 echo "=== HOW TO RUN LATER ==="
-echo "cd OrpheusDL"
-echo "source venv/bin/activate"
-echo "CLI: python orpheus.py"
-echo "or Web UI: python webui.py"
+echo " "
+echo "cd OrpheusDL && source venv/bin/activate && python webui.py"
+echo " "
