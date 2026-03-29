@@ -41,9 +41,9 @@ def run_orpheus(args: list[str], job_id: str):
     # Progress Parsing Regexes
     progress_re = re.compile(r'(\d+)%')
     tqdm_re = re.compile(r'^\d+%\|')
-    track_re = re.compile(r'(?:Track|Playlist item|Playlist)?\s*(\d+)/(\d+)', re.IGNORECASE)
-    album_re = re.compile(r'Album\s*(\d+)/(\d+)', re.IGNORECASE)
-    total_albums_re = re.compile(r'Number of albums:\s*(\d+)', re.IGNORECASE)
+    track_re = re.compile(r'(?:(?:Track|Playlist item|Playlist)\s*|^)(\d+)/(\d+)', re.IGNORECASE)
+    album_re = re.compile(r'(?:Album|Release)\s*(\d+)/(\d+)', re.IGNORECASE)
+    total_albums_re = re.compile(r'Number of (?:albums|releases):\s*(\d+)', re.IGNORECASE)
 
     # Multi-level progress tracking
     global_curr = 1
@@ -64,16 +64,12 @@ def run_orpheus(args: list[str], job_id: str):
         )
         active_procs[job_id] = proc
 
-        for line in proc.stdout:
-            # Handle carriage returns from tqdm or other progress indicators
-            if '\r' in line:
-                # Split by \r and take the last part that has content
-                parts = line.split('\r')
-                line = parts[-1] if parts[-1].strip() else (parts[-2] if len(parts) > 1 else parts[0])
-            
-            line = ansi_escape.sub('', line)
-            line = line.strip('\r\n').strip()
-            if not line: continue
+        for raw_line in proc.stdout:
+            # Handle carriage returns from tqdm or concurrent progress updates
+            # Treating each \r as a newline ensures all status updates are processed and logged
+            for line in raw_line.replace('\r', '\n').splitlines():
+                line = ansi_escape.sub('', line).strip()
+                if not line: continue
 
             # Filter out noisy download metrics
             if "Download speed:" in line or "Download time:" in line:
