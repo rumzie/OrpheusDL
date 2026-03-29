@@ -40,6 +40,8 @@ def run_orpheus(args: list[str], job_id: str):
     progress_re = re.compile(r'(\d+)%')
     # tqdm progress bar lines look like: "33%|####2  | 6.29M/19.2M [00:00<00:01, 8.31MB/s]"
     tqdm_re = re.compile(r'^\d+%\|')
+    # OrpheusDL "Track X/Y" or "Album X/Y" lines
+    track_re = re.compile(r'(?:Track|Album|Playlist item|Album|Playlist)\s+(\d+)/(\d+)', re.IGNORECASE)
 
     try:
         proc = subprocess.Popen(
@@ -82,14 +84,28 @@ def run_orpheus(args: list[str], job_id: str):
                 if any(marker in line for marker in logo_markers):
                     continue
            
-            # Simple progress parsing
-            # Look for percentage (tqdm style: " 10%|#   |")
+            # Enhanced progress parsing
+            # 1. Track-based progress (X/Y) - gives overall job completion
+            tm = track_re.search(line)
+            if tm:
+                curr = int(tm.group(1))
+                total = int(tm.group(2))
+                if total > 0:
+                    prog = int((curr / total) * 100)
+                    if prog > jobs[job_id]["progress"]:
+                        jobs[job_id]["progress"] = prog
+            
+            # 2. Percentage-based progress (tqdm style: " 10%|#   |")
             pm = progress_re.search(line)
             if pm:
-                jobs[job_id]["progress"] = int(pm.group(1))
+                val = int(pm.group(1))
+                # Only update if it doesn't cause the overall progress to flicker backwards
+                # (unless we're at a very low value meaning a new job sub-task)
+                if val > jobs[job_id]["progress"]:
+                    jobs[job_id]["progress"] = val
             elif "Downloading" in line:
-                if jobs[job_id]["progress"] < 10:
-                    jobs[job_id]["progress"] = 10
+                if jobs[job_id]["progress"] < 5:
+                    jobs[job_id]["progress"] = 5
             elif "Done" in line or "Success" in line:
                 jobs[job_id]["progress"] = 100
 

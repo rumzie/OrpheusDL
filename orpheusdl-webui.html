@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OrpheusDL</title>
+  <title>OrpheusDL - Web UI</title>
+  <link rel="icon" type="image/png" href="icon.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;600;700;800&display=swap"
     rel="stylesheet">
@@ -2667,10 +2668,8 @@
         // --- Heading Lines (Equals) ---
         if (line.startsWith('===') && line.endsWith('===')) {
           const content = line.slice(3, -3).trim();
-
-          // 1. Success/Completion (Content Green)
-          // Look for ✓, +, or keywords
-          if (content.match(/[+✓]/) || content.toLowerCase().match(/(completed|successfully|success)/)) {
+          // 1. Success/Completion/Warning/Error (Colored Content)
+          if (content.match(/[+✓▶⚠✗x]/) || content.toLowerCase().match(/(completed|successfully|success|failed|error|skipped|exists)/)) {
             const isError = content.toLowerCase().match(/(failed|error)/) || content.includes('✗') || content.includes('x');
             const isWarning = content.toLowerCase().includes('skipped') || content.includes('▶') || content.includes('⚠') || content.includes('&gt;');
             
@@ -2763,7 +2762,6 @@
           return res;
         }
 
-        // --- Success / Done ---
         if (line.includes('✓') || line.toUpperCase().startsWith('DONE') || line.toLowerCase().includes('successfully')) {
           return `<span class="log-success"><span class="log-icon">✓</span>${line}</span>`;
         }
