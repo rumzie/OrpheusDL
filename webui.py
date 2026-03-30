@@ -378,7 +378,10 @@ def api_settings_get():
         return jsonify({"error": "settings.json not found"}), 404
     try:
         with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-            return jsonify(json.load(f))
+            resp = jsonify(json.load(f))
+            resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            resp.headers["Pragma"] = "no-cache"
+            return resp
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -404,7 +407,10 @@ def api_settings_raw():
         return jsonify({"error": "settings.json not found"}), 404
     try:
         with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
-            return jsonify({"raw": f.read()})
+            resp = jsonify({"raw": f.read()})
+            resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            resp.headers["Pragma"] = "no-cache"
+            return resp
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -38,6 +38,7 @@ class Orpheus:
                 "download_path": "./downloads/",
                 "download_quality": "hifi",
                 "search_limit": 25,
+                "disabled_search_platforms": [],
                 "concurrent_downloads": 5,
                 "progress_bar": False
             },
@@ -98,9 +99,6 @@ class Orpheus:
                     },
                     "aac": {
                         "audio_bitrate": "256k"
-                    },
-                    "opus": {
-                        "b:a": "192k"
                     }
                 },
                 "conversion_keep_original": False,
@@ -119,7 +117,7 @@ class Orpheus:
         self.session_storage_location = os.path.join(self.data_folder_base, 'loginstorage.bin')
 
         os.makedirs('config', exist_ok=True)
-        self.settings = json.loads(open(self.settings_location, 'r').read()) if os.path.exists(self.settings_location) else {}
+        self.settings = json.loads(open(self.settings_location, 'r', encoding='utf-8').read()) if os.path.exists(self.settings_location) else {}
 
         try:
             if self.settings['global']['advanced']['debug_mode']: 
@@ -404,7 +402,7 @@ class Orpheus:
                 elif 'custom_data' in current_session: current_session.pop('custom_data')
 
         pickle.dump({'advancedmode': advanced_login_mode, 'modules': new_module_sessions}, open(self.session_storage_location, 'wb'))
-        open(self.settings_location, 'w').write(json.dumps(new_settings, indent = 4, sort_keys = False))
+        open(self.settings_location, 'w', encoding='utf-8').write(json.dumps(new_settings, indent = 4, sort_keys = False))
 
         if new_setting_detected:
             if self.settings.get('global', {}).get('advanced', {}).get('debug_mode', False):

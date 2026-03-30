@@ -1189,6 +1189,22 @@
       border-color: rgba(255, 0, 0, 0.35);
     }
 
+    /* Override for Settings -> Search Platforms grid (Opt-Out style) */
+    #search-platforms-grid .platform-pill {
+      opacity: 0.5; /* Muted when not selected */
+      border-color: rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+    
+    #search-platforms-grid .platform-pill.selected {
+      opacity: 1; /* Fully visible when selected */
+      background: rgba(74, 158, 255, 0.08); /* Matches .platform-pill:hover */
+      color: var(--text-color) !important; /* Matches .platform-pill:hover */
+      border-color: rgba(74, 158, 255, 0.3) !important; /* Matches .platform-pill:hover */
+      box-shadow: none;
+      transform: translateY(-1px);
+    }
+
     /* ── GHOST BTN ── */
     .ghost-btn {
       background: rgba(255, 255, 255, 0.04);
@@ -1640,6 +1656,15 @@
             </div>
             <input type="text" id="global-search_limit" data-path="global.general.search_limit"
               style="width:80px;text-align:center;" />
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:12px;">
+            <div class="setting-label"
+              title="Platforms to include when searching with 'All' selected.">
+              Search 'all' platforms <div class="help-icon">?</div>
+            </div>
+            <div id="search-platforms-grid" class="platform-grid" style="padding-left: 4px;">
+              <!-- Dynamically populated -->
+            </div>
           </div>
           <div class="setting-row">
             <div class="setting-label"
@@ -3193,12 +3218,14 @@
 
     async function fetchSettings() {
       try {
-        const res = await fetch('/api/settings');
+        const res = await fetch('/api/settings?t=' + Date.now());
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.error || 'Failed to fetch settings');
         }
-        return await res.json();
+        const data = await res.json();
+        console.log('[Settings] Loaded:', data.global?.general?.disabled_search_platforms);
+        return data;
       } catch (e) {
         throw new Error('Failed to fetch settings. Is webui.py running? ' + e.message);
       }
@@ -3271,6 +3298,29 @@
           if (el.type === 'range') { el.nextElementSibling.textContent = el.value; }
         }
       });
+      renderSearchPlatformSettings(data);
+    }
+
+    function renderSearchPlatformSettings(data) {
+      const grid = document.getElementById('search-platforms-grid');
+      if (!grid || !data.modules) return;
+      
+      const disabled = data.global.general.disabled_search_platforms || [];
+      const modules = Object.keys(data.modules).sort();
+      
+      grid.innerHTML = modules.map(m => {
+        if (customModuleConfigs[m]?.hide) return '';
+        // In the opt-out model, if it's NOT in the disabled list, it's considered "Selected/Active"
+        const isIncluded = !disabled.includes(m);
+        return `
+          <div class="platform-pill ${isIncluded ? 'selected' : ''}" 
+               data-id="${m}" 
+               data-platform="${m}" 
+               onclick="this.classList.toggle('selected')">
+            ${humanizeSettingsKey(m)}
+          </div>
+        `;
+      }).join('');
     }
 
     function renderModuleSettings(moduleKey) {
@@ -3504,6 +3554,10 @@
     async function saveAllSettings() {
       if (!settingsCache) return;
       const updated = JSON.parse(JSON.stringify(settingsCache));
+      
+      // Safety: Ensure global.general exists
+      if (!updated.global) updated.global = {};
+      if (!updated.global.general) updated.global.general = {};
       document.querySelectorAll('[data-path^="global."]').forEach(el => {
         const path = el.dataset.path.split('.');
         const key = path.pop();
@@ -3521,6 +3575,16 @@
           parent[key] = val;
         }
       });
+
+      // Special handling for search platforms array (Opt-Out model)
+      const platformGrid = document.getElementById('search-platforms-grid');
+      if (platformGrid) {
+        // Collect platforms that are NOT selected (meaning they are disabled)
+        const disabled = Array.from(platformGrid.querySelectorAll('.platform-pill:not(.selected)'))
+          .map(p => p.dataset.id);
+        updated.global.general.disabled_search_platforms = disabled;
+        console.log('[Settings] Saving disabled platforms:', disabled);
+      }
 
       const activeTabId = window._activeSettingsTabId;
       if (activeTabId && activeTabId !== 'tab-global') {
