@@ -1553,7 +1553,7 @@
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
-          <button class="glass-btn primary" onclick="doSearch()"
+          <button id="search-btn" class="glass-btn primary" onclick="doSearch()"
             style="padding:0; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:50%;"
             title="Search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -2412,6 +2412,35 @@
       }
     };
 
+    // ── IMAGE FALLBACK CACHE ──
+    const imageFallbackCache = {};
+    function handleImageError(img) {
+      const originalSrc = img.dataset.originalSrc;
+      const fallback = 'https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg';
+      if (originalSrc) imageFallbackCache[originalSrc] = fallback;
+      img.src = fallback;
+      img.onerror = null;
+    }
+
+    function updateSearchBtnState(isSearching) {
+      const btn = document.getElementById('search-btn');
+      if (!btn) return;
+      if (isSearching) {
+        btn.title = 'Stop Search';
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="6" width="12" height="12"></rect>
+          </svg>`;
+      } else {
+        btn.title = 'Search';
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>`;
+      }
+    }
+
     function copyToClipboard(text, btn) {
       if (!navigator.clipboard) {
         // Fallback for older browsers or non-HTTPS
@@ -2859,13 +2888,23 @@
             status.textContent = 'Downloading'; status.className = 'badge badge-white';
             document.getElementById('dl-stop-btn').style.display = 'inline-block';
           }
-        } catch (e) { clearInterval(iv); }
+        } catch (e) {
+          clearInterval(iv);
+          document.getElementById('dl-stop-btn').style.display = 'none';
+        }
       }, 800);
     }
 
     // ── SEARCH ──
     let currentSearchJobId = null;
     async function doSearch() {
+      if (currentSearchJobId) {
+        stopJob(currentSearchJobId);
+        currentSearchJobId = null;
+        updateSearchBtnState(false);
+        return;
+      }
+
       const q = document.getElementById('search-input').value.trim();
       if (!q) return;
       const platformPill = document.querySelector('#search-platforms .platform-pill.selected');
@@ -2884,6 +2923,7 @@
         const { job_id, error } = await res.json();
         if (error) { list.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">' + error + '</div>'; return; }
         currentSearchJobId = job_id;
+        updateSearchBtnState(true);
         pollSearchJob(job_id, list);
       } catch (e) {
         list.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">Backend not reachable. Is webui.py running?</div>';
@@ -2892,6 +2932,12 @@
 
     function pollSearchJob(job_id, list) {
       const iv = setInterval(async () => {
+        // --- PREVENTION: Abandon this interval if a new search has started ---
+        if (job_id !== currentSearchJobId) {
+          clearInterval(iv);
+          return;
+        }
+
         try {
           const res = await fetch('/api/job/' + job_id);
           const job = await res.json();
@@ -2906,10 +2952,21 @@
             const restored = list.querySelector(`.result-item[data-index="${idx}"]`);
             if (restored) restored.classList.add('selected');
           });
-          if (job.status === 'done' || job.status === 'error') {
+
+          if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
             clearInterval(iv);
+            if (job_id === currentSearchJobId) {
+              currentSearchJobId = null;
+              updateSearchBtnState(false);
+            }
           }
-        } catch (e) { clearInterval(iv); }
+        } catch (e) {
+          clearInterval(iv);
+          if (job_id === currentSearchJobId) {
+            currentSearchJobId = null;
+            updateSearchBtnState(false);
+          }
+        }
       }, 800);
     }
 
@@ -3017,11 +3074,13 @@
         const platformIcon = r.platform ? platformMap[r.platform.toLowerCase()] : null;
         const branding = getPlatformBranding(r.platform || 'Search');
 
+        const displayUrl = imageFallbackCache[r.imageUrl] || r.imageUrl;
+
         return `
       <div class="result-item" onclick="selectResult(this)" data-index="${r.num}" data-platform="${r.platform || ''}">
         <div class="result-num">${r.num}</div>
         <div class="result-cover-container">
-          ${r.imageUrl ? `<img src="${r.imageUrl}" class="result-cover" loading="lazy" onerror="this.onerror=null;this.src='https://geo-media.beatport.com/image_size/500x500/ab2d1d04-233d-4b08-8234-9782b34dcab8.jpg';">` : `<div class="result-cover-placeholder">?</div>`}
+          ${r.imageUrl ? `<img src="${displayUrl}" class="result-cover" loading="lazy" data-original-src="${r.imageUrl}" onerror="handleImageError(this)">` : `<div class="result-cover-placeholder">?</div>`}
           ${platformIcon ? `<div class="platform-icon-overlay"><img src="/platforms/${platformIcon}"></div>` : ''}
         </div>
         <div class="result-info">
