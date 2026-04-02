@@ -3109,6 +3109,67 @@
     }
 
 
+    function getEffectiveQualityInfo(platformName, requestedQuality) {
+      const hierarchy = ['atmos', 'hifi', 'lossless', 'high', 'low'];
+      const requestedIdx = hierarchy.indexOf(requestedQuality.toLowerCase());
+      if (requestedIdx === -1) return { quality: requestedQuality, label: requestedQuality.toUpperCase() };
+
+      const normalizedPlatform = platformName.toLowerCase().replace(/\s+/g, '');
+      const mapPlatformToPolicy = {
+        'beatport': 'beat',
+        'beatsource': 'beat',
+        'deezer': 'deezer',
+        'qobuz': 'qobuz',
+        'soundcloud': 'soundcloud',
+        'applemusic': 'applemusic',
+        'spotify': 'spotify',
+        'tidal': 'tidal',
+        'youtube': 'youtube'
+      };
+      const policy = mapPlatformToPolicy[normalizedPlatform] || 'default';
+
+      // Get visible chips for this policy (matching applyCodecPolicy logic)
+      let visible = [0, 1, 2, 3, 4];
+      if (policy === 'beat' || policy === 'deezer') visible = [2, 3, 4];
+      else if (policy === 'qobuz') visible = [1, 2, 3];
+      else if (policy === 'soundcloud' || policy === 'applemusic') visible = [3];
+      else if (policy === 'spotify') visible = [3, 4];
+      else if (policy === 'youtube') visible = [2, 3, 4];
+
+      // Find highest visible chip with index >= requestedIdx
+      let bestIdx = -1;
+      for (let i = 0; i < hierarchy.length; i++) {
+        if (i >= requestedIdx && visible.includes(i)) {
+          bestIdx = i;
+          break;
+        }
+      }
+
+      // Fallback to closest supported if requested is out of range
+      if (bestIdx === -1 && visible.length > 0) {
+        // If requested index is higher than any visible (user wants LOW, but only HIGH+ available), 
+        // use the highest visible index (lowest quality).
+        bestIdx = visible[visible.length - 1];
+      }
+      if (bestIdx === -1) return { quality: requestedQuality, label: requestedQuality.toUpperCase() };
+
+      // Get label and quality string for this chip index under this policy
+      let label = hierarchy[bestIdx].toUpperCase();
+      let quality = hierarchy[bestIdx];
+
+      if (policy === 'spotify') {
+        if (bestIdx === 3) { label = 'HIGH'; quality = 'lossless'; }
+        if (bestIdx === 4) { label = 'LOW'; quality = 'low'; }
+      } else if (policy === 'youtube') {
+        if (bestIdx === 2) { label = 'OPUS'; quality = 'lossless'; }
+        if (bestIdx === 3) { label = 'AAC'; quality = 'high'; }
+        if (bestIdx === 4) { label = 'MP3'; quality = 'low'; }
+      }
+
+      return { quality, label };
+    }
+
+
     function selectResult(el) {
       // Toggle selection — click to select, click again to deselect
       el.classList.toggle('selected');
@@ -3120,7 +3181,7 @@
 
       const activePage = document.querySelector('.page.active');
       const selectedChip = activePage ? activePage.querySelector('.codec-chip.selected') : document.querySelector('.codec-chip.selected');
-      const quality = selectedChip?.dataset?.quality ? selectedChip.dataset.quality : (selectedChip?.textContent.trim() || '');
+      const requestedQuality = selectedChip?.dataset?.quality ? selectedChip.dataset.quality : (selectedChip?.textContent.trim() || '');
 
       // Switch to download tab to show progress
       switchPage('url', document.querySelector('.nav-tab'));
@@ -3143,6 +3204,9 @@
         const platform = selected.dataset.platform || 'Search';
         const branding = getPlatformBranding(platform);
 
+        // Adjust quality based on platform capabilities
+        const { label: effLabel, quality: effQuality } = getEffectiveQualityInfo(platform, requestedQuality);
+
         bar.style.width = '0%'; lbl.textContent = '0%';
         status.textContent = 'Starting…'; status.className = 'badge badge-white';
         if (logEl) logEl.textContent = '';
@@ -3151,13 +3215,13 @@
           tTitle.textContent = branding.name;
           tTitle.style.color = branding.color;
         }
-        if (tMeta) tMeta.textContent = quality ? `${quality} · from search` : 'Search result';
+        if (tMeta) tMeta.textContent = effLabel ? `${effLabel} · from search` : 'Search result';
 
         try {
           const res = await fetch('/api/search/download', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ search_job_id: lastSearchJobId, index: parseInt(index), quality })
+            body: JSON.stringify({ search_job_id: lastSearchJobId, index: parseInt(index), quality: effQuality })
           });
           const { job_id, error } = await res.json();
           if (error) { alert('Error: ' + error); continue; }
