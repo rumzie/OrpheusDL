@@ -2897,6 +2897,7 @@
 
     // ── SEARCH ──
     let currentSearchJobId = null;
+    let lastSearchJobId = null;
     async function doSearch() {
       if (currentSearchJobId) {
         stopJob(currentSearchJobId);
@@ -2923,6 +2924,7 @@
         const { job_id, error } = await res.json();
         if (error) { list.innerHTML = '<div style="padding:12px;color:#f87171;font-size:12px;">' + error + '</div>'; return; }
         currentSearchJobId = job_id;
+        lastSearchJobId = job_id;
         updateSearchBtnState(true);
         pollSearchJob(job_id, list);
       } catch (e) {
@@ -3155,7 +3157,7 @@
           const res = await fetch('/api/search/download', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ search_job_id: currentSearchJobId, index: parseInt(index), quality })
+            body: JSON.stringify({ search_job_id: lastSearchJobId, index: parseInt(index), quality })
           });
           const { job_id, error } = await res.json();
           if (error) { alert('Error: ' + error); continue; }
