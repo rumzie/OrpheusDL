@@ -840,7 +840,7 @@ class Downloader:
 
         playlist_tags = {k: sanitise_name(v) for k, v in asdict(playlist_info).items()}
         playlist_tags['name'] = safe_playlist_name # Use the safe name for path formatting
-        playlist_tags['explicit'] = ' [E]' if playlist_info.explicit else ''
+        playlist_tags['explicit'] = ' 🅴' if playlist_info.explicit else ''
         playlist_path_formatted_name = self.global_settings['formatting']['playlist_format'].format(**playlist_tags)
         playlist_path = os.path.join(self.path, playlist_path_formatted_name)
         # fix path byte limit
@@ -1107,7 +1107,7 @@ class Downloader:
         album_tags = {k: sanitise_name(v) for k, v in asdict(album_info).items()}
         album_tags['id'] = str(album_id)
         album_tags['quality'] = f' [{album_info.quality}]' if album_info.quality else ''
-        album_tags['explicit'] = ' [E]' if album_info.explicit else ''
+        album_tags['explicit'] = ' 🅴' if album_info.explicit else ''
         album_tags['artist_initials'] = self._get_artist_initials_from_name(album_info)
         
         # Add additional formatting tags if they exist
@@ -1128,7 +1128,7 @@ class Downloader:
         """Create the full file path for a track. Use override_codec (e.g. from download_info.different_codec) for the file extension when the downloaded file is in a different container."""
         # Clean up track tags and add special formats
         track_tags = {k: sanitise_name(v) for k, v in asdict(track_info).items()}
-        track_tags['explicit'] = ' [E]' if track_info.explicit else ''
+        track_tags['explicit'] = ' 🅴' if track_info.explicit else ''
         
         # Add commonly used format variables
         track_tags['artist'] = ', '.join([sanitise_name(artist) for artist in track_info.artists]) if track_info.artists else ''

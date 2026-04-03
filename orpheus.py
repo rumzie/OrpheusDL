@@ -228,9 +228,8 @@ def main():
                         items = module.search(query_type, query, limit=(1 if lucky_mode else orpheus.settings['global']['general']['search_limit']))
                         if not items:
                             continue
-
                         for item in items:
-                            additional_details = '[E] ' if item.explicit else ''
+                            additional_details = '🅴 ' if item.explicit else ''
                             additional_details += f'[{beauty_format_seconds(item.duration)}] ' if item.duration else ''
                             additional_details += f'[{item.year}] ' if item.year else ''
                             additional_details += ' '.join([f'[{i}]' for i in item.additional]) if item.additional else ''
