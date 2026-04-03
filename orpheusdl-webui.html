@@ -1459,11 +1459,11 @@
       <div class="glass-card">
         <div class="card-label blue">DOWNLOAD FOLDER</div>
         <div style="display:flex; gap:10px; align-items:center;">
-          <input type="text" id="url-download-folder" value="downloads" style="flex:1; min-width:0;" />
+          <input type="text" id="url-download-folder" data-path="global.general.download_path" value="downloads" style="flex:1; min-width:0;" />
           <div style="display:flex; flex-direction:column; gap:6px;">
             <button class="ghost-btn"
               style="height:30px; display:inline-flex; align-items:center; justify-content:center; padding:0 12px; font-size:11px; font-family:'Roboto Mono', monospace; font-weight:700; letter-spacing:0.5px; min-width:75px; border-radius:8px; color:var(--text-muted);"
-              onclick="openFolderPicker('url-download-folder')">Browse</button>
+              onclick="openFolderPicker('url-download-folder')">Set</button>
             <button class="ghost-btn"
               style="height:30px; display:inline-flex; align-items:center; justify-content:center; padding:0 12px; font-size:11px; font-family:'Roboto Mono', monospace; font-weight:700; letter-spacing:0.5px; min-width:75px; border-radius:8px; color:var(--text-color);"
               onclick="openDownloadBrowser('url-download-folder')">Open</button>
@@ -1622,16 +1622,6 @@
             <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;min-width:200px;">
               <input type="text" id="global-download_path" data-path="global.general.download_path"
                 style="flex:1; min-width:0;" />
-              <button class="ghost-icon-btn" type="button" title="Open Download Browser" aria-label="Open Browser"
-                style="height:30px; width:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:8px;"
-                onclick="openDownloadBrowser('global-download_path')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </button>
               <button class="ghost-icon-btn" type="button" title="Browse folders" aria-label="Browse"
                 style="height:30px; width:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:8px;"
                 onclick="openFolderPicker('global-download_path')">
@@ -1640,6 +1630,16 @@
                   <path d="M10 6H14" />
                   <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z" />
                   <path d="M8 12h8" />
+                </svg>
+              </button>
+              <button class="ghost-icon-btn" type="button" title="Open Download Browser" aria-label="Open Browser"
+                style="height:30px; width:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border-radius:8px;"
+                onclick="openDownloadBrowser('global-download_path')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
               </button>
             </div>
@@ -2214,12 +2214,20 @@
       btn.classList.add('active');
 
       if (id === 'settings') {
-        initSettings().then(() => {
+        const finalizeSettingsTab = () => {
           const globalPill = document.querySelector('#settings-tabs .platform-pill');
-          if (globalPill && !window._activeSettingsTabId || window._activeSettingsTabId === 'tab-global') {
+          if (globalPill && (!window._activeSettingsTabId || window._activeSettingsTabId === 'tab-global')) {
             selectSettingsTab(globalPill, 'tab-global');
           }
-        });
+        };
+
+        if (!settingsCache) {
+          initSettings().then(finalizeSettingsTab);
+        } else {
+          // Re-load current state into UI before showing to ensure consistency
+          loadGlobalSettings(settingsCache);
+          finalizeSettingsTab();
+        }
       }
     }
 
@@ -3635,7 +3643,10 @@
     }
 
     async function saveAllSettings() {
-      if (!settingsCache) return;
+      if (!settingsCache) {
+        console.warn('[Settings] Cache missing, attempting immediate fetch...');
+        try { settingsCache = await fetchSettings(); } catch (e) { return; }
+      }
       const updated = JSON.parse(JSON.stringify(settingsCache));
 
       // Safety: Ensure global.general exists
@@ -3697,13 +3708,13 @@
       }
 
       try {
+        settingsCache = updated;
         const res = await fetch('/api/settings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updated)
         });
         if (!res.ok) throw new Error('Save failed');
-        settingsCache = updated;
         // Success feedback
         const btn = document.getElementById('settings-save-btn');
         btn.classList.add('success');
@@ -3717,6 +3728,28 @@
     }
 
     document.getElementById('settings-save-btn').onclick = saveAllSettings;
+    
+    // Sync download folders between tabs with auto-save
+    function setupFolderSync() {
+      const urlInput = document.getElementById('url-download-folder');
+      const settingsInput = document.getElementById('global-download_path');
+      
+      const syncAndSave = (source, target) => {
+        if (target.value !== source.value) {
+          target.value = source.value;
+          saveAllSettings();
+        }
+      };
+
+      urlInput.addEventListener('change', () => syncAndSave(urlInput, settingsInput));
+      settingsInput.addEventListener('change', () => syncAndSave(settingsInput, urlInput));
+      
+      // Also handle input from folder picker (dispatched as 'input')
+      urlInput.addEventListener('input', () => syncAndSave(urlInput, settingsInput));
+      settingsInput.addEventListener('input', () => syncAndSave(settingsInput, urlInput));
+    }
+    
+    setupFolderSync();
 
     // ── FOLDER PICKER ──
     let currentPickerTarget = null;
@@ -3741,7 +3774,7 @@
         modal.innerHTML = `
         <div class="glass-card" style="width: 100%; max-width: 560px; max-height: 85vh; display: flex; flex-direction: column; padding:14px;">
             <div class="card-label" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              Browse Folders
+              Set Download Folder
               <button class="ghost-icon-btn" onclick="closeFolderPicker()" style="width:24px; height:24px;">✕</button>
             </div>
             <div id="picker-path" style="font-size:11px; color:var(--accent-1); margin-bottom:6px; word-break:break-all; font-family:'Roboto Mono',monospace;"></div>
@@ -3912,6 +3945,8 @@
     function openFile(path) {
       window.open('/api/view?path=' + encodeURIComponent(path), '_blank');
     }
+
+    initSettings();
   </script>
   <div id="custom-tooltip"></div>
 </body>
