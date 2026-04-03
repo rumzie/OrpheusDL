@@ -104,9 +104,9 @@ def run_orpheus(args: list[str], job_id: str):
 
                 # 2. Progress Calculation
                 if global_total > 0:
-                    # Current Completed / Total
+                    # Current Completed / Total (base progress of current track)
                     gc = max(1, global_curr)
-                    prog = int((gc / global_total) * 100)
+                    prog = int(((gc - 1) / global_total) * 100)
                     
                     if prog >= 100: prog = 98  # Cap at 98% until fully 'Done'
                     if prog > jobs[job_id]["progress"]:
@@ -117,7 +117,7 @@ def run_orpheus(args: list[str], job_id: str):
                 if pm:
                     val = int(pm.group(1))
                     # Scale if we have a global context
-                    if global_total > 1:
+                    if global_total > 0:
                         gc = max(1, global_curr)
                         val = int(((gc - 1) + (val / 100)) / global_total * 100)
                     
