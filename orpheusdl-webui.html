@@ -58,7 +58,7 @@
       font-family: "Roboto Mono", monospace;
       font-size: 11px;
       color: var(--log-secondary);
-      max-height: 200px;
+      max-height: 400px;
       overflow-y: auto;
       border-radius: 8px;
       white-space: pre-wrap;
@@ -1191,16 +1191,21 @@
 
     /* Override for Settings -> Search Platforms grid (Opt-Out style) */
     #search-platforms-grid .platform-pill {
-      opacity: 0.5; /* Muted when not selected */
+      opacity: 0.5;
+      /* Muted when not selected */
       border-color: rgba(255, 255, 255, 0.1);
       transition: all 0.2s ease;
     }
-    
+
     #search-platforms-grid .platform-pill.selected {
-      opacity: 1; /* Fully visible when selected */
-      background: rgba(74, 158, 255, 0.08); /* Matches .platform-pill:hover */
-      color: var(--text-color) !important; /* Matches .platform-pill:hover */
-      border-color: rgba(74, 158, 255, 0.3) !important; /* Matches .platform-pill:hover */
+      opacity: 1;
+      /* Fully visible when selected */
+      background: rgba(74, 158, 255, 0.08);
+      /* Matches .platform-pill:hover */
+      color: var(--text-color) !important;
+      /* Matches .platform-pill:hover */
+      border-color: rgba(74, 158, 255, 0.3) !important;
+      /* Matches .platform-pill:hover */
       box-shadow: none;
       transform: translateY(-1px);
     }
@@ -1658,8 +1663,7 @@
               style="width:80px;text-align:center;" />
           </div>
           <div class="setting-row" style="flex-direction:column; align-items:flex-start; gap:12px;">
-            <div class="setting-label"
-              title="Platforms to include when searching with 'All' selected.">
+            <div class="setting-label" title="Platforms to include when searching with 'All' selected.">
               Search 'all' platforms <div class="help-icon">?</div>
             </div>
             <div id="search-platforms-grid" class="platform-grid" style="padding-left: 4px;">
@@ -2691,28 +2695,31 @@
     }
 
     // ── LOG FORMATTING ──
+    let lastFormattedLog = '';
+    let lastLogLength = 0;
+
     function formatLog(logArray) {
       if (!logArray || !logArray.length) return '';
+      // Optimization: Only re-format if the log has actually grown
+      if (logArray.length === lastLogLength) return lastFormattedLog;
 
       // 1. Join and handle split URLs (specific to OrpheusDL output)
+      // FIX: Use a more specific regex to avoid catastrophic backtracking
       let text = logArray.join('\n');
-      text = text.replace(/URL:\s+([\s\S]+?)(?=\s+If the browser|$)/g, (match, p1) => {
+      text = text.replace(/URL:\s+([^\s]+?)(?=\s+If the browser|$)/g, (match, p1) => {
         return 'URL: ' + p1.replace(/\s+/g, '');
       });
 
       // 2. Escape HTML & Split
-      const escapedLines = text.split('\n').map(line =>
-        line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-      );
-
-      // 3. Process each line for styles
-      const formattedLines = escapedLines.map(line => {
-        const trimmed = line.trim();
-        if (!trimmed) return line;
+      const lines = text.split('\n');
+      const formattedLines = lines.map(line => {
+        const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const trimmed = escaped.trim();
+        if (!trimmed) return escaped;
 
         // --- Heading Lines (Dashes) ---
-        if (line.startsWith('---') && line.endsWith('---')) {
-          const content = line.slice(3, -3).trim();
+        if (trimmed.startsWith('---') && trimmed.endsWith('---')) {
+          const content = trimmed.slice(3, -3).trim();
           if (content.toLowerCase().includes('stopped')) {
             return `<span class="log-gray">---</span> <span class="log-error">${content}</span> <span class="log-gray">---</span>`;
           }
@@ -2720,22 +2727,15 @@
         }
 
         // --- Heading Lines (Equals) ---
-        if (line.startsWith('===') && line.endsWith('===')) {
-          const content = line.slice(3, -3).trim();
-          // 1. Success/Completion/Warning/Error (Colored Content)
+        if (trimmed.startsWith('===') && trimmed.endsWith('===')) {
+          const content = trimmed.slice(3, -3).trim();
           if (content.match(/[+✓▶⚠✗]/) || content.toLowerCase().match(/(completed|successfully|success|failed|error|skipped|exists)/)) {
             const isError = content.toLowerCase().match(/(failed|error)/) || content.includes('✗');
             const isWarning = content.toLowerCase().includes('skipped') || content.includes('▶') || content.includes('⚠') || content.includes('&gt;');
-            
-            let colorClass = 'log-success';
-            if (isError) colorClass = 'log-error';
-            else if (isWarning) colorClass = 'log-warning';
-
+            let colorClass = isError ? 'log-error' : (isWarning ? 'log-warning' : 'log-success');
             return `<span class="log-gray">===</span> <span class="${colorClass}">${content}</span> <span class="log-gray">===</span>`;
           }
 
-          // 2. Downloading Prefix (Type gray, Name white)
-          // Example: Downloading track This Is the Track name
           const downloadRegex = /^(Downloading (?:track|album|playlist|label)) (.+?)( \(.+\))?$/i;
           const dlMatch = content.match(downloadRegex);
           if (dlMatch) {
@@ -2744,106 +2744,60 @@
             res += ` <span class="log-gray">===</span>`;
             return res;
           }
-
-          // 3. Fallback (Content White)
           return `<span class="log-gray">===</span> <span class="log-white">${content}</span> <span class="log-gray">===</span>`;
         }
 
         // --- Metadata Lines ---
         const metaRegex = /^(Artist|Artists|Label|Album|Playlist creator|Year|Release year|Playlist creation year|Duration|Number of tracks|Quality):\s+(.+)$/i;
-        const metaMatch = line.match(metaRegex);
+        const metaMatch = trimmed.match(metaRegex);
         if (metaMatch) {
           const value = metaMatch[2];
           const parts = value.match(/^(.+?)(\s*\(.+\))?$/);
-          if (parts && parts[2]) {
-            return `<span class="log-label">${metaMatch[1]}:</span> <span class="log-value">${parts[1]}</span><span class="log-gray">${parts[2]}</span>`;
-          }
-          return `<span class="log-label">${metaMatch[1]}:</span> <span class="log-value">${value}</span>`;
+          return `<span class="log-label">${metaMatch[1]}:</span> <span class="log-value">${parts ? parts[1] : value}</span>${(parts && parts[2]) ? `<span class="log-gray">${parts[2]}</span>` : ''}`;
         }
 
         // --- Platform Line ---
-        const platformRegex = /^(Platform):\s+(.+)$/i;
-        const platformMatch = line.match(platformRegex);
-        if (platformMatch) {
-          const branding = getPlatformBranding(platformMatch[2]);
-          return `<span class="log-label">${platformMatch[1]}:</span> <span class="log-value" style="color: ${branding.color}">${platformMatch[2]}</span>`;
+        if (trimmed.toLowerCase().startsWith('platform:')) {
+          const pName = trimmed.split(':')[1].trim();
+          const branding = getPlatformBranding(pName);
+          return `<span class="log-label">Platform:</span> <span class="log-value" style="color: ${branding.color}">${pName}</span>`;
         }
 
-        // --- Generic Downloading Lines (no ===) ---
-        const downloadRegexRaw = /^(Downloading (?:track|album|playlist|label)) (.+?)( \(.+\))?$/i;
-        const dlMatchRaw = line.match(downloadRegexRaw);
-        if (dlMatchRaw) {
-          let res = `<span class="log-gray">${dlMatchRaw[1]}</span> <span class="log-white">${dlMatchRaw[2]}</span>`;
-          if (dlMatchRaw[3]) res += `<span class="log-gray">${dlMatchRaw[3]}</span>`;
-          return res;
-        }
-
-        // --- Track Lines (Improved Regex and Color Isolation) ---
-        // Match both Windows (x, +, >) and Unix (+, ✓, ▶, ✗, ⚠) style markers
+        // --- Track Lines ---
         const trackRegex = /^(\d+\/\d+)\s+([+x✓✗▶⚠]|&gt;)\s+(.+)$/;
-        const trackMatch = line.match(trackRegex);
+        const trackMatch = trimmed.match(trackRegex);
         if (trackMatch) {
-          const index = trackMatch[1];
-          const symbol = trackMatch[2];
-          let fullTitle = trackMatch[3];
-
-          let title = fullTitle;
-          let extra = '';
-          let extraClass = 'log-secondary';
-
-          // Look for status markers in the LAST parenthesis
+          const index = trackMatch[1], symbol = trackMatch[2];
+          let fullTitle = trackMatch[3], title = fullTitle, extra = '', extraClass = 'log-secondary';
           const statusMatch = fullTitle.match(/\s+(\([^)]*?(?:already exists|skip|failed|error)[^)]*?\))$/i);
           if (statusMatch) {
             title = fullTitle.slice(0, -statusMatch[1].length).trim();
             extra = statusMatch[1];
-
-            const isWarning = extra.toLowerCase().includes('exists') || extra.toLowerCase().includes('skip');
-            const isError = extra.toLowerCase().includes('failed') || extra.toLowerCase().includes('error');
-            if (isWarning) extraClass = 'log-warning';
-            else if (isError) extraClass = 'log-error';
+            if (extra.toLowerCase().includes('exists') || extra.toLowerCase().includes('skip')) extraClass = 'log-warning';
+            else if (extra.toLowerCase().includes('failed') || extra.toLowerCase().includes('error')) extraClass = 'log-error';
           }
-
           let symbolClass = 'log-secondary';
           if (symbol === '+' || symbol === '✓') symbolClass = 'log-success';
-          else if (symbol === '&gt;' || symbol === '▶') symbolClass = 'log-warning';
+          else if (symbol === '&gt;' || symbol === '▶' || symbol === '⚠') symbolClass = 'log-warning';
           else if (symbol === 'x' || symbol === '✗') symbolClass = 'log-error';
-          else if (symbol === '⚠') symbolClass = 'log-warning';
 
-          let res = `<span class="log-gray">${index}</span> <span class="${symbolClass}">${symbol}</span> <span class="log-white" style="color:var(--text-color); font-weight:400;">${title}</span>`;
-          if (extra) {
-            res += ` <span class="${extraClass}">${extra}</span>`;
-          }
-          return res;
+          return `<span class="log-gray">${index}</span> <span class="${symbolClass}">${symbol}</span> <span class="log-white">${title}</span>${extra ? ` <span class="${extraClass}">${extra}</span>` : ''}`;
         }
 
-        if (line.includes('✓') || line.toUpperCase().startsWith('DONE') || line.toLowerCase().includes('successfully')) {
-          return `<span class="log-success"><span class="log-icon">✓</span>${line}</span>`;
+        if (trimmed.includes('✓') || trimmed.toUpperCase().startsWith('DONE') || trimmed.toLowerCase().includes('successfully')) {
+          return `<span class="log-success">${escaped}</span>`;
+        }
+        if (trimmed.toUpperCase().includes('ERROR') || trimmed.toUpperCase().includes('FAILED')) {
+          return `<span class="log-error">${escaped}</span>`;
         }
 
-        // --- Error / Failed (General lines) ---
-        if (line.toUpperCase().includes('ERROR') || line.toUpperCase().includes('FAILED')) {
-          // If it's a "Track failed" but didn't match the trackRegex (e.g. malformed prefix)
-          if (line.includes('/') && line.includes('(')) {
-            // Try to isolate the status label even in malformed lines
-            const labelMatch = line.match(/\((failed|error)\)$/i);
-            if (labelMatch) {
-              const pre = line.slice(0, -labelMatch[0].length);
-              return `<span class="log-secondary">${pre}</span> <span class="log-error">${labelMatch[0]}</span>`;
-            }
-          }
-          return `<span class="log-error"><span class="log-icon">⚠</span>${line}</span>`;
-        }
-
-        // --- URL Detection (for generic lines) ---
         const urlRegex = /(https?:\/\/[^\s]+?)(?=[,.]?(\s|$))/g;
-        if (urlRegex.test(line)) {
-          return line.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
-        }
-
-        return line;
+        return escaped.replace(urlRegex, '<a href="$1" target="_blank">$1</a>');
       });
 
-      return formattedLines.join('\n');
+      lastLogLength = logArray.length;
+      lastFormattedLog = formattedLines.join('\n');
+      return lastFormattedLog;
     }
 
     // ── POLL JOB ──
@@ -2853,15 +2807,13 @@
       if (logContainer) logContainer.style.display = 'block';
       if (logEl) logEl.textContent = '';
 
-      const iv = setInterval(async () => {
-        // --- PREVENTION: Abandon this interval if a new job has started ---
-        if (job_id !== activeJobId) {
-          clearInterval(iv);
-          return;
-        }
+      async function run() {
+        if (job_id !== activeJobId) return;
         try {
           const res = await fetch('/api/job/' + job_id);
+          if (!res.ok) throw new Error('Network error');
           const job = await res.json();
+
           bar.style.width = job.progress + '%';
           lbl.textContent = job.progress + '%';
 
@@ -2870,9 +2822,8 @@
             logEl.scrollTop = logEl.scrollHeight;
           }
 
-          const lastLine = job.log.slice(-1)[0] || '';
+          const lastLine = job.log && job.log.length ? job.log[job.log.length - 1] : '';
           if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
-            clearInterval(iv);
             document.getElementById('dl-stop-btn').style.display = 'none';
             if (job.status === 'done') {
               bar.style.width = '100%'; lbl.textContent = '100%';
@@ -2887,12 +2838,14 @@
           } else {
             status.textContent = 'Downloading'; status.className = 'badge badge-white';
             document.getElementById('dl-stop-btn').style.display = 'inline-block';
+            setTimeout(run, 800);
           }
         } catch (e) {
-          clearInterval(iv);
-          document.getElementById('dl-stop-btn').style.display = 'none';
+          console.error('Polling error:', e);
+          if (job_id === activeJobId) setTimeout(run, 2000); // Retry after delay
         }
-      }, 800);
+      }
+      run();
     }
 
     // ── SEARCH ──
@@ -3230,9 +3183,11 @@
 
           // Wait for this job to finish before starting the next
           await new Promise(resolve => {
-            const iv = setInterval(async () => {
+            async function runIter() {
+              if (job_id !== activeJobId) { resolve(); return; }
               try {
                 const r = await fetch('/api/job/' + job_id);
+                if (!r.ok) throw new Error('Network error');
                 const job = await r.json();
                 bar.style.width = job.progress + '%';
                 lbl.textContent = job.progress + '%';
@@ -3243,9 +3198,7 @@
                 }
 
                 if (job.status === 'done' || job.status === 'error' || job.status === 'stopped') {
-                  clearInterval(iv);
                   document.getElementById('dl-stop-btn').style.display = 'none';
-
                   if (job.status === 'done') {
                     bar.style.width = '100%'; lbl.textContent = '100%';
                     status.textContent = selectedItems.length > 1 && i < selectedItems.length - 1
@@ -3264,9 +3217,14 @@
                     ? `Downloading (${i + 1}/${selectedItems.length})` : 'Downloading';
                   status.className = 'badge badge-white';
                   document.getElementById('dl-stop-btn').style.display = 'inline-block';
+                  setTimeout(runIter, 800);
                 }
-              } catch (e) { clearInterval(iv); resolve(); }
-            }, 800);
+              } catch (e) {
+                console.error('Batch polling error:', e);
+                setTimeout(runIter, 2000); // Retry on error
+              }
+            }
+            runIter();
           });
         } catch (e) {
           console.error(e);
@@ -3429,10 +3387,10 @@
     function renderSearchPlatformSettings(data) {
       const grid = document.getElementById('search-platforms-grid');
       if (!grid || !data.modules) return;
-      
+
       const disabled = data.global.general.disabled_search_platforms || [];
       const modules = Object.keys(data.modules).sort();
-      
+
       grid.innerHTML = modules.map(m => {
         if (customModuleConfigs[m]?.hide) return '';
         // In the opt-out model, if it's NOT in the disabled list, it's considered "Selected/Active"
@@ -3679,7 +3637,7 @@
     async function saveAllSettings() {
       if (!settingsCache) return;
       const updated = JSON.parse(JSON.stringify(settingsCache));
-      
+
       // Safety: Ensure global.general exists
       if (!updated.global) updated.global = {};
       if (!updated.global.general) updated.global.general = {};

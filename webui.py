@@ -39,11 +39,12 @@ def run_orpheus(args: list[str], job_id: str):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     
     # Progress Parsing Regexes
-    progress_re = re.compile(r'(\d+)%')
+    progress_re = re.compile(r'(?:\s|^)(\d+)%(?:\s|\||$)')
     tqdm_re = re.compile(r'^\d+%\|')
-    track_re = re.compile(r'(?:(?:Track|Playlist item|Playlist)\s*|^)(\d+)/(\d+)', re.IGNORECASE)
+    track_re = re.compile(r'(?:Track|Playlist item|Playlist|Release item)?\s*(\d+)/(\d+)', re.IGNORECASE)
     album_re = re.compile(r'(?:Album|Release)\s*(\d+)/(\d+)', re.IGNORECASE)
-    total_albums_re = re.compile(r'Number of (?:albums|releases):\s*(\d+)', re.IGNORECASE)
+    # Generic "Number of..." to catch total counts early
+    total_counts_re = re.compile(r'Number of (?:albums|releases|tracks|items):\s*(\d+)', re.IGNORECASE)
 
     # Multi-level progress tracking
     global_curr = 1
@@ -64,81 +65,99 @@ def run_orpheus(args: list[str], job_id: str):
         )
         active_procs[job_id] = proc
 
-        for raw_line in proc.stdout:
+        for line in iter(proc.stdout.readline, ''):
             # Handle carriage returns from tqdm or concurrent progress updates
             # Treating each \r as a newline ensures all status updates are processed and logged
-            for line in raw_line.replace('\r', '\n').splitlines():
-                line = ansi_escape.sub('', line).strip()
-                if not line: continue
+            for l in line.replace('\r', '\n').splitlines():
+                l = ansi_escape.sub('', l).strip()
+                if not l: continue
 
-            # Filter out noisy download metrics
-            if "Download speed:" in line or "Download time:" in line:
-                continue
-
-            # Whitelist search result lines: if it has metadata tags, it's NOT a logo
-            if '|PLATFORM|' in line and '|ID|' in line:
-                pass
-            else:
-                # Filter out the ASCII logo
-                logo_markers = ['____', '/  \\', '|  |', '|__|', '\\____']
-                if any(marker in line for marker in logo_markers):
+                # Filter out noisy download metrics
+                if "Download speed:" in l or "Download time:" in l:
                     continue
-           
-            # --- Progress Parsing ---
-            
-            # 1. Detect Global Scope (Artist level)
-            tam = total_albums_re.search(line)
-            if tam:
-                global_total = int(tam.group(1))
-            
-            am = album_re.search(line)
-            if am:
-                global_curr = int(am.group(1))
-                global_total = int(am.group(2))
 
-            # 2. Level 2 (Track-based) progress
-            # Ignore pagination lines to prevent false hits like "(page 2/2)"
-            if "(page " not in line.lower():
-                tm = track_re.search(line)
-                if tm:
-                    curr = int(tm.group(1))
-                    total = int(tm.group(2))
-                    if total > 0:
-                        if global_total > 1:
-                            # Nested calculation: (Global completed index + Current Item Fraction) / Global Total
-                            # Ensure we don't go negative with global_curr
-                            gc = max(1, global_curr)
-                            prog = int(((gc - 1) + (curr / total)) / global_total * 100)
-                        else:
-                            # Standard single-level calculation (e.g., single Album/Playlist/Track)
-                            prog = int((curr / total) * 100)
-                        
-                        if prog >= 100: prog = 98  # Cap at 98% until fully 'Done'
-                        if prog > jobs[job_id]["progress"]:
-                            jobs[job_id]["progress"] = prog
-            
-            # 3. Percentage-based fallback (tqdm style)
-            pm = progress_re.search(line)
-            if pm:
-                val = int(pm.group(1))
-                # If we have a global scope, treat percentage as a fraction of the current global item
-                if global_total > 1:
-                    gc = max(1, global_curr)
-                    val = int(((gc - 1) + (val / 100)) / global_total * 100)
+                # Whitelist search result lines: if it has metadata tags, it's NOT a logo
+                if '|PLATFORM|' in l and '|ID|' in l:
+                    pass
+                else:
+                    # Filter out the ASCII logo
+                    logo_markers = ['____', '/  \\', '|  |', '|__|', '\\____']
+                    if any(marker in l for marker in logo_markers):
+                        continue
+               
+                # --- Progress Parsing ---
                 
-                if val > jobs[job_id]["progress"]:
-                    jobs[job_id]["progress"] = val
-            elif "Downloading" in line:
-                if jobs[job_id]["progress"] < 5:
-                    jobs[job_id]["progress"] = 5
-            elif "Done" in line or "Success" in line:
-                jobs[job_id]["progress"] = 100
+                # 1. Detect Global Scope
+                tm = track_re.search(l)
+                if tm:
+                    global_curr = int(tm.group(1))
+                    global_total = int(tm.group(2))
+                
+                am = album_re.search(l)
+                if am:
+                    global_curr = int(am.group(1))
+                    global_total = int(am.group(2))
 
-            # Skip tqdm progress bar lines from the visible log (they clutter output)
-            if tqdm_re.match(line):
-                continue
+                tcm = total_counts_re.search(l)
+                if tcm:
+                    global_total = int(tcm.group(1))
 
-            jobs[job_id]["log"].append(line)
+                # 2. Progress Calculation
+                if global_total > 0:
+                    # Current Completed / Total
+                    gc = max(1, global_curr)
+                    prog = int((gc / global_total) * 100)
+                    
+                    if prog >= 100: prog = 98  # Cap at 98% until fully 'Done'
+                    if prog > jobs[job_id]["progress"]:
+                        jobs[job_id]["progress"] = prog
+                
+                # 3. Percentage-based fallback (tqdm style)
+                pm = progress_re.search(l)
+                if pm:
+                    val = int(pm.group(1))
+                    # Scale if we have a global context
+                    if global_total > 1:
+                        gc = max(1, global_curr)
+                        val = int(((gc - 1) + (val / 100)) / global_total * 100)
+                    
+                    if val >= 100: val = 98 # NEVER let the loop hit 100%
+                    
+                    if val > jobs[job_id].get("progress", 0):
+                        jobs[job_id]["progress"] = val
+                elif "Downloading" in l:
+                    if jobs[job_id]["progress"] < 5:
+                        jobs[job_id]["progress"] = 5
+
+                # --- Advanced Log Cleaning ---
+                
+                # 1. Broadly identify progress bars (anywhere in the line)
+                is_bar = '%|' in l or 'it/s]' in l or 'B/s]' in l
+                
+                # 2. If it's a progress bar, try to see if it ALSO contains a track marker
+                # Concurrent mode often merges them: "BAR   1/46 + Name"
+                if is_bar:
+                    # Attempt to extract a track status line from it
+                    track_match = track_re.search(l)
+                    if track_match:
+                        # Re-process just the track part
+                        # Find where the track index starts and keep only that to the end
+                        start_idx = l.find(track_match.group(0))
+                        l = l[start_idx:].strip()
+                        is_bar = False # It's now a valid track line
+                    else:
+                        continue # It's just a pure progress update, skip it
+
+                # 3. Final Noise Filter (Logo, Speed Metrics, TQDM artifacts)
+                noise_markers = ['speed:', 'time:', 'ETA', 'it/s', 'B/s', '█', '░', '▒', '▓']
+                if any(m in l for m in noise_markers) and '===' not in l:
+                    continue
+
+                jobs[job_id]["log"].append(l)
+                # Keep logs manageable but sufficient for large batches
+                if len(jobs[job_id]["log"]) > 5000:
+                    jobs[job_id]["log"].pop(0)
+
 
         proc.wait()
         if proc.returncode == 0:
@@ -176,7 +195,7 @@ def api_download():
     if not url:
         return jsonify({"error": "No URL provided"}), 400
 
-    args = []
+    args = ["--non-interactive"]
     if quality:
         args += ["--quality", quality.lower()]
     args.append(url)
@@ -290,7 +309,7 @@ def api_search_download():
     url = result["id"]
     platform = result["platform"]
 
-    args = []
+    args = ["--non-interactive"]
     if quality:
         args += ["--quality", quality.lower()]
     
