@@ -253,7 +253,12 @@ def main():
                             
                     except Exception as e:
                         if modulename_input == 'all':
-                            print(f"Error searching {modulename}: {str(e)}")
+                            err_str = str(e)
+                            err_lower = err_str.lower()
+                            if "user authentication is required" in err_lower or '"code":401' in err_str.replace(" ", ""):
+                                print(f"Error searching {modulename}: Authentication required (token invalid or expired).")
+                            else:
+                                print(f"Error searching {modulename}: {err_str}")
                             continue
                         else:
                             raise e
@@ -439,6 +444,11 @@ if __name__ == "__main__":
                 exit(1)
             if " --> " in err_str and ("credentials" in err_lower or "cookies" in err_lower or "settings.json" in err_str):
                 print(f'\n{e}')
+                exit(1)
+            # Friendly auth errors for modules like Qobuz returning JSON 401s
+            if "user authentication is required" in err_lower or '"code":401' in err_str.replace(" ", ""):
+                print(f'\nAuthentication Error: The modular login token is invalid or has expired.')
+                print('Please check your credentials in settings.json or refresh your session.')
                 exit(1)
         # User-facing guidance (e.g. no modules installed): show message only, no traceback
         if err_str and "No modules are installed" in err_str:
