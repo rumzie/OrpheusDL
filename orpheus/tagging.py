@@ -181,7 +181,10 @@ def tag_file(file_path: str, image_path: str, track_info: TrackInfo, credits_lis
     # add the label tag
     if track_info.tags.label:
         if container in {ContainerEnum.flac, ContainerEnum.ogg, ContainerEnum.webm}:
-            tagger['Label'] = track_info.tags.label
+            # Use list-style assignment for maximum VorbisComment compatibility
+            tagger['LABEL'] = [track_info.tags.label]
+            tagger['PUBLISHER'] = [track_info.tags.label]
+            tagger['ORGANIZATION'] = [track_info.tags.label]
         elif container == ContainerEnum.mp3:
             tagger.tags._EasyID3__id3._DictProxy__dict['TPUB'] = TPUB(
                 encoding=3,

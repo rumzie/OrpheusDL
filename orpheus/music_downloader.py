@@ -253,9 +253,12 @@ class Downloader:
             if lyrics_service and hasattr(lyrics_service, 'get_track_lyrics'):
                 try:
                     lyrics_info = lyrics_service.get_track_lyrics(track_info.id, **track_info.lyrics_extra_kwargs)
-                    track_info.lyrics = lyrics_info.embedded
-                    # Pass synced lyrics to the caller via an attribute for saving
-                    track_info.synced_lyrics = lyrics_info.synced
+                    if lyrics_info:
+                        track_info.lyrics = lyrics_info.embedded
+                        # Pass synced lyrics to the caller via an attribute for saving
+                        track_info.synced_lyrics = lyrics_info.synced
+                    else:
+                        self.print('No lyrics available for this track', drop_level=1)
                 except Exception as e:
                     self.print(f'Could not fetch lyrics: {e}', drop_level=1)
 
@@ -2425,41 +2428,22 @@ class Downloader:
         if track_info.codec:
             codec_name = track_info.codec.name if hasattr(track_info.codec, 'name') else str(track_info.codec).replace('CodecEnum.', '')
 
-            # Special handling for Spotify - show expected values based on quality setting
-            if self.service_name.lower() == 'spotify':
-                codec_info.append('Codec: VORBIS')
-
-                # Determine bitrate based on quality setting
-                # Spotify: hifi=320kbps, high=160kbps, low=96kbps
-                # With button remapping: "High Quality" -> hifi (320), "Low Quality" -> high (160)
-                quality_setting = self.global_settings['general']['download_quality'].lower()
-                if quality_setting in ['lossless', 'hifi']:
-                    codec_info.append('bitrate: 320kbps')
-                elif quality_setting == 'high':
-                    codec_info.append('bitrate: 160kbps')
-                else:  # low quality
-                    codec_info.append('bitrate: 96kbps')
-
-                # Standard values for Spotify
-                codec_info.append('bit depth: 16bit')
-                codec_info.append('sample rate: 44100kHz')
+            # For Atmos, show uniform information as requested
+            if codec_name == 'EAC3':
+                codec_info.append('Codec: Dolby Atmos (EAC3 JOC)')
+                codec_info.append('bitrate: 768kbps')
+                codec_info.append('channels: 5.1')
+                codec_info.append('sample rate: 48kHz')
             else:
-                # For Atmos, show uniform information as requested
-                if codec_name == 'EAC3':
-                    codec_info.append('Codec: Dolby Atmos (EAC3 JOC)')
-                    codec_info.append('bitrate: 768kbps')
-                    codec_info.append('channels: 5.1')
-                    codec_info.append('sample rate: 48kHz')
-                else:
-                    # For other services and non-Atmos codecs, use actual track info
-                    codec_info.append(f'Codec: {codec_name}')
+                # For other services and non-Atmos codecs, use actual track info
+                codec_info.append(f'Codec: {codec_name}')
 
-                    if track_info.bitrate:
-                        codec_info.append(f'bitrate: {track_info.bitrate}kbps')
-                    if track_info.bit_depth:
-                        codec_info.append(f'bit depth: {track_info.bit_depth}bit')
-                    if track_info.sample_rate:
-                        codec_info.append(f'sample rate: {track_info.sample_rate}kHz')
+                if track_info.bitrate:
+                    codec_info.append(f'bitrate: {track_info.bitrate}kbps')
+                if track_info.bit_depth:
+                    codec_info.append(f'bit depth: {track_info.bit_depth}bit')
+                if track_info.sample_rate:
+                    codec_info.append(f'sample rate: {track_info.sample_rate}kHz')
 
             d_print(', '.join(codec_info))
 
