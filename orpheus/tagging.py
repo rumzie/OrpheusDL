@@ -256,11 +256,12 @@ def tag_file(file_path: str, image_path: str, track_info: TrackInfo, credits_lis
                 # Vorbis comments (FLAC/OGG/Opus/WebM) conventionally store only
                 # the release YEAR in DATE (e.g. "1982"), not a full ISO date.
                 # MP3 above and the MP4 branch below already expose the year.
-                tagger['date'] = (
-                    str(track_info.release_year)
-                    if track_info.release_year
-                    else track_info.tags.release_date[:4]
-                )
+                # tagger['date'] = (
+                #     str(track_info.release_year)
+                #     if track_info.release_year
+                #     else track_info.tags.release_date[:4]
+                # )
+                tagger['date'] = str(track_info.tags.release_date)
         else:
             tagger['date'] = str(track_info.release_year)
         if track_info.tags.copyright: tagger['copyright'] = track_info.tags.copyright
